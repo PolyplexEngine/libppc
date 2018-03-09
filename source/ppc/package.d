@@ -120,4 +120,16 @@ public class ContentConverter {
 		Image img = new Image(t);
 		return img;
 	}
+
+	public static void ConvertToFile(string input, string output) {
+		if (is_ext(input, "png") || is_ext(input, "jpg") || is_ext(input, "tga")) {
+			ConvertImage(input, output);
+			return;
+		}
+		throw new Exception("Unsupported file format");
+	}
+
+	private static bool is_ext(string input, string ext) {
+		return input[input.length-3..input.length] == ext;
+	}
 }

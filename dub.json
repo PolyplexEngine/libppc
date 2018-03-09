@@ -1,0 +1,13 @@
+{
+	"name": "ppc",
+	"authors": [
+		"Clipsey"
+	],
+	"dependencies": {
+		"imageformats": "~>6.1.2"
+	},
+	"targetType": "dynamicLibrary",
+	"description": "Content managment for polyplex",
+	"copyright": "Copyright © 2018, Clipsey",
+	"license": "MIT"
+}

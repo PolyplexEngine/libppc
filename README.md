@@ -1,2 +1,11 @@
-# libppc
-Library for reading and writing polyplex content files.
+[![Polyplex Logo][logo]](https://github.com/PolyplexEngine/ppbranding)
+
+# Polyplex Content Library (libppc)
+<a href='https://ko-fi.com/O4O59UGN' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://az743702.vo.msecnd.net/cdn/kofi2.png?v=0' border='0' alt='Buy Clipsey a Coffee at ko-fi.com' /></a>
+
+libppc is a library for reading and writing Polyplex content files, for use with [Polyplex](https://github.com/PolyplexEngine/libpp)
+
+## Notice
+This is still early work in progress.
+
+[logo]: https://github.com/PolyplexEngine/ppbranding/blob/master/polyplex3.jpg

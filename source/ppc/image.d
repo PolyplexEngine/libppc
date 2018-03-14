@@ -2,23 +2,32 @@ module ppc.image;
 import ppc;
 import imageformats;
 
-class Image : BaseContent {
+public class ImageFactory : ContentFactory {
+	public this() {
+		super(TypeId.Texture2D);
+	}
+
+	public override Content Construct(ubyte[] data) {
+		return new Image(data);
+	}
+}
+
+public class Image : Content {
 	public long Width;
 	public long Height;
 	public ubyte[] Colors;
 
-	this(Content base) {
-		this.Parent = base;
-		IFImage im = read_image_from_mem(base.Data, ColFmt.RGBA);
+	this(ubyte[] data) {
+		super(data);
+		//this.Parent = base;
+		IFImage im = read_image_from_mem(this.data, ColFmt.RGBA);
 		this.Width = im.w;
 		this.Height = im.h;
 		this.Colors = im.pixels;
 	}
 
-	public void Save(string name, string extension) {
-		ubyte[] data = pp_write_img(extension);
-		this.Parent.Data = data;
-		this.Parent.Save(name);
+	public override ubyte[] Compile() {
+		return pp_write_img("png");
 	}
 
 	public void SavePng(string name) {

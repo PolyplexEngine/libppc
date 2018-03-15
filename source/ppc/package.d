@@ -189,6 +189,10 @@ public class ContentFile {
 	*/
 	public FileTypeId TypeID() { return cast(FileTypeId) Type; }
 
+	this(TypeId type) {
+		this.Type = type;
+	}
+
 	/**
 		Construct a raw content class.
 	*/

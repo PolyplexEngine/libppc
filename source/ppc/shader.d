@@ -33,10 +33,16 @@ public class ShaderCode {
 	public CodeType Type;
 	public ubyte[] Code;
 	public @property string CodeString() { return cast(string)Code; }
+	public @property void CodeString(string value) { Code = cast(ubyte[])value; }
+
+	public this(CodeType type) {
+		this.Type = type;
+		this.Code = [];
+	}
 
 	public this(CodeType type, ubyte[] code) {
-		this.Code = code;
 		this.Type = type;
+		this.Code = code;
 	}
 }
 
@@ -44,6 +50,10 @@ public class Shader : Content {
 
 	public ShaderType Type;
 	public ShaderCode[] Code;
+
+	public this() {
+		super(TypeId.Shader);
+	}
 
 	public this(ubyte[] data) {
 		super(data);
@@ -71,6 +81,11 @@ public class Shader : Content {
 			//Finish off loading the shader code, if no more data is left.
 			if (i+1 >= data.length) done = true;
 		}
+	}
+
+	public void Add(ShaderCode code) {
+		this.Code.length++;
+		this.Code[this.Code.length-1] = code;
 	}
 
 	public override ubyte[] Compile() {

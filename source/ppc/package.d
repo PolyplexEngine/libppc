@@ -75,6 +75,11 @@ public class Content {
 	*/
 	public TypeId TypeID() { return cast(TypeId) Type; }
 
+	public this(TypeId type) {
+		this.Type = type;
+		this.data = [];
+	}
+
 	/**
 		Constructs content type from data.
 	*/
@@ -189,7 +194,7 @@ public class ContentFile {
 	*/
 	public FileTypeId TypeID() { return cast(FileTypeId) Type; }
 
-	this(TypeId type) {
+	this(FileTypeId type) {
 		this.Type = type;
 	}
 
@@ -204,7 +209,7 @@ public class ContentFile {
 	/**
 		Construct a raw content class.
 	*/
-	this(TypeId id, ubyte[] data) {
+	this(FileTypeId id, ubyte[] data) {
 		this.Type = cast(ubyte)id;
 		this.Data = from_file_data(data);
 	}
@@ -214,14 +219,14 @@ public class ContentFile {
 	*/
 	public void Save(string name) {
 		File f = File(name, "w+");
-		f.rawWrite(CreateRaw());
+		f.rawWrite(Compile());
 		f.close();
 	}
 
 	/**
 		Turn the Content class into a file-writable byte array.
 	*/
-	public ubyte[] CreateRaw() {
+	public ubyte[] Compile() {
 		ubyte[] ts = ContentHeader;
 		ts.length += 1;
 		ts[ts.length-1] = this.TypeID;

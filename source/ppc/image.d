@@ -17,6 +17,10 @@ public class Image : Content {
 	public long Height;
 	public ubyte[] Colors;
 
+	public this() {
+		super(TypeId.Texture2D);
+	}
+
 	this(ubyte[] data) {
 		super(data);
 		//this.Parent = base;

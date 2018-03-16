@@ -51,35 +51,35 @@ public class Shader : Content {
 	public ShaderType Type;
 	public ShaderCode[] Code;
 
-	public this() {
-		super(TypeId.Shader);
+	public this(string name) {
+		super(TypeId.Shader, name);
 	}
 
 	public this(ubyte[] data) {
 		super(data);
-		this.Type = cast(ShaderType)data[0];
+		this.Type = cast(ShaderType)this.data[0];
 		bool done = false;
 		int i = 1;
 		while (!done) {
 			// Set Code Type Header.
-			CodeType t = cast(CodeType)data[i];
+			CodeType t = cast(CodeType)this.data[i];
 			i++;
 
 			// Set Length Header.
-			ubyte[4] len_i = data[i..i+4];
+			ubyte[4] len_i = this.data[i..i+4];
 			int length = bigEndianToNative!int(len_i);
 			i += 4;
 
 			if (length == 0) throw new InvalidHeaderSizeException("Shader [Infinite loading loop!]");
 
 			// Set Shader Code.
-			ubyte[] d = data[i..i+length];
+			ubyte[] d = this.data[i..i+length];
 			i += length;
 			Code.length++;
 			Code[Code.length-1] = new ShaderCode(t, d);
 
 			//Finish off loading the shader code, if no more data is left.
-			if (i+1 >= data.length) done = true;
+			if (i+1 >= this.data.length) done = true;
 		}
 	}
 

@@ -1,11 +1,15 @@
 module ppc;
 public import ppc.image;
+public import ppc.bundle;
+public import ppc.shader;
+
 public import ppc.exceptions;
 import ppc.utils;
 
 import std.file;
 import std.stdio;
 import std.conv;
+import std.bitmanip;
 
 /**
 	PPCoHead Header Name
@@ -71,10 +75,18 @@ public class Content {
 	public ubyte Type;
 
 	/**
+		The name of the content.
+	*/
+	public string Name;
+
+	/**
 		ubyte representation of the type.
 	*/
 	public TypeId TypeID() { return cast(TypeId) Type; }
 
+	/**
+		Constructs content type from data.
+	*/
 	public this(TypeId type) {
 		this.Type = type;
 		this.data = [];
@@ -83,8 +95,19 @@ public class Content {
 	/**
 		Constructs content type from data.
 	*/
+	public this(TypeId type, string name) {
+		this.Type = type;
+		this.Name = name;
+		this.data = [];
+	}
+
+	/**
+		Constructs content type from data.
+	*/
 	public this(ubyte[] data) {
 		this.Type = data[0];
+		int namelen = bigEndianToNative!int(data[1..5]);
+		this.Name = cast(string)data[5..5+namelen];
 		this.data = data[1..data.length];
 	}
 
@@ -92,6 +115,16 @@ public class Content {
 		Returns an ubyte array of the compiled representation of the content.
 	*/
 	public abstract ubyte[] Compile();
+
+	public ubyte[] CompileFull() {
+		ubyte[] data = [this.Type];
+		ubyte[int.sizeof] n_len = nativeToBigEndian(cast(int)this.Name.length);
+		ubyte[] n = cast(ubyte[])this.Name;
+
+		data = Combine(data, n_len);
+		data = Combine(data, n);
+		return Combine(data, Compile());
+	}
 }
 
 public class RawContentFactory : ContentFactory {
@@ -153,21 +186,23 @@ public class ContentInfo {
 		Binary representation of the content info header portion.
 	*/
 	public @property ubyte[] Bytes() {
+		ubyte[4] author_len = nativeToBigEndian(cast(int)Author.length);
 		ubyte[] author = cast(ubyte[])Author;
+
+		ubyte[4] msg_len = nativeToBigEndian(cast(int)Message.length);
 		ubyte[] msg = cast(ubyte[])Message;
-		ubyte[] data;
-		data.length++;
-		data[0] = License;
-		for (int i = 0; i < author.length; i++) {
-			data.length++;
-			data[i+1] = author[i];
-		}
-		for (int i = 0; i < msg.length; i++) {
-			data.length++;
-			data[i+1+author.length] = msg[i];
-		}
-		return data;
-	}	
+		
+		ubyte[] data = Combine(author_len, author);
+		data = Combine(data, msg_len);
+		data = Combine(data, msg);
+		return Combine(data, [License]);
+	}
+
+	public this() {
+		this.Author = "Nobody";
+		this.License = ContentLicense.Propriatary;
+		this.Message = "<Insert Message Here>";
+	}
 }
 
 /**
@@ -230,7 +265,11 @@ public class ContentFile {
 		ubyte[] ts = ContentHeader;
 		ts.length += 1;
 		ts[ts.length-1] = this.TypeID;
-		return Combine(ts, this.Data.Compile());
+		ubyte[] inf = this.Info.Bytes;
+		ubyte[8] infl = nativeToBigEndian(inf.length);
+		inf = Combine(infl, inf);
+		ts = Combine(ts, inf);
+		return Combine(ts, this.Data.CompileFull());
 	}
 }
 
@@ -243,6 +282,8 @@ private ContentFactory[ubyte] factories;
 public void SetupBaseFactories() {
 	AddFactory(new RawContentFactory());
 	AddFactory(new ImageFactory());
+	AddFactory(new BundleFactory());
+	AddFactory(new ShaderFactory());
 }
 
 private Content from_file_data(ubyte[] data) {
@@ -250,7 +291,11 @@ private Content from_file_data(ubyte[] data) {
 	return factories[data[0]].Construct(data);
 }
 
-public class ContentFileLoader {
+public class ContentManager {
+
+	public static Content Load(ubyte[] data) {
+		return from_file_data(data);
+	}
 
 	public static Content Load(string file) {
 		File f = File(file);

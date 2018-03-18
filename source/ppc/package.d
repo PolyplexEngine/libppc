@@ -285,12 +285,9 @@ public class ContentFile {
 
 		// Info
 		cf.Info = ContentInfo.FromBytes(dat[8..8+infl]);
-		writeln(cf.Info.Author, ", ", cf.Info.License, ", ", cf.Info.Message);
-				
-		dat = dat[8+infl..dat.length];
 
 		//Data
-		cf.Data = from_file_data(dat);
+		cf.Data = from_file_data(dat[8+infl..dat.length]);
 		return cf;
 	}
 }

@@ -112,6 +112,11 @@ public class Content {
 	}
 
 	/**
+		Converts input bytes into this type of content.
+	*/
+	public abstract void Convert(ubyte[] data);
+
+	/**
 		Returns an ubyte array of the compiled representation of the content.
 	*/
 	public abstract ubyte[] Compile();
@@ -138,16 +143,20 @@ public class RawContentFactory : ContentFactory {
 }
 
 public class RawContent : Content {
+	public this(string name) {
+		super(TypeId.Raw, name);
+	}
+
 	public this(ubyte[] b) {
 		super(b);
 	}
 
+	public override void Convert(ubyte[] data) {
+		this.data = data;
+	}
+
 	public override ubyte[] Compile() {
-		ubyte[] data = new ubyte[this.data.length+1];
-		data[0] = this.Type;
-		for (int i = 1; i < data.length; i++)
-			data[i] = this.data[i];
-		return data;
+		return this.data;
 	}
 	
 }
@@ -273,12 +282,18 @@ public class ContentFile {
 	}
 }
 
+/**
+	Adds a type to the type factory.
+*/
 public void AddFactory(ContentFactory fac) {
 	factories[fac.Id] = fac;
 }
 
 private ContentFactory[ubyte] factories;
 
+/**
+	Imports all of the factories needed to build types automagically.
+*/
 public void SetupBaseFactories() {
 	AddFactory(new RawContentFactory());
 	AddFactory(new ImageFactory());
@@ -293,10 +308,16 @@ private Content from_file_data(ubyte[] data) {
 
 public class ContentManager {
 
+	/**
+		Load loads a content file (from memory)
+	*/
 	public static Content Load(ubyte[] data) {
 		return from_file_data(data);
 	}
 
+	/**
+		Load loads a content file.
+	*/
 	public static Content Load(string file) {
 		File f = File(file);
 		ubyte[ContentHeader.length] header;

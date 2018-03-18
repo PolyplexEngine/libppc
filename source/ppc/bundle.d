@@ -65,6 +65,10 @@ public class Bundle : Content {
 		BundleContents[cont.Name] = cont;
 	}
 
+	public override void Convert(ubyte[] data) {
+		// Do Nothing, nonconvertible type for now
+	}
+
 	public override ubyte[] Compile() {
 		ubyte[] d = [];
 		ubyte[] d_lookup_b = [];

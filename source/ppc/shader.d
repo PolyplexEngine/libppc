@@ -82,6 +82,10 @@ public class Shader : Content {
 			if (i+1 >= this.data.length) done = true;
 		}
 	}
+	
+	public override void Convert(ubyte[] data) {
+		// Do Nothing, nonconvertible type for now
+	}
 
 	public void Add(ShaderCode code) {
 		this.Code.length++;

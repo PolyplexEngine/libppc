@@ -30,6 +30,13 @@ public class Image : Content {
 		this.Colors = im.pixels;
 	}
 
+	public override void Convert(ubyte[] data) {
+		IFImage im = read_image_from_mem(data, ColFmt.RGBA);
+		this.Width = im.w;
+		this.Height = im.h;
+		this.Colors = im.pixels;
+	}
+
 	public override ubyte[] Compile() {
 		return pp_write_img("png");
 	}

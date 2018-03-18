@@ -1,6 +1,7 @@
 module ppc.image;
 import ppc;
 import imageformats;
+import std.stdio;
 
 public class ImageFactory : ContentFactory {
 	public this() {
@@ -23,11 +24,6 @@ public class Image : Content {
 
 	this(ubyte[] data) {
 		super(data);
-		//this.Parent = base;
-		IFImage im = read_image_from_mem(this.data, ColFmt.RGBA);
-		this.Width = im.w;
-		this.Height = im.h;
-		this.Colors = im.pixels;
 	}
 
 	public override void Convert(ubyte[] data) {

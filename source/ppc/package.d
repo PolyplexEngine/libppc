@@ -25,18 +25,30 @@ public enum FileTypeId : ubyte {
 }
 
 public enum TypeId : ubyte {
-	Bundle,
-	Script,
-	Texture2D,
-	TextureList,
-	Model,
-	Mesh,
-	Audio,
-	Sample,
-	Shader,
-	Dictionary,
-	Data,
-	Raw
+	Texture2D = 0,
+	Bundle = 1,
+	Script = 2,
+	TextureList = 3,
+	Model = 4,
+	Mesh = 5,
+	Audio = 6,
+	Sample = 7,
+	Shader = 8,
+	Dictionary = 9,
+	Data = 10,
+	Raw = 11
+}
+
+public enum ContentLicense : ubyte {
+	Propriatary,
+	MIT,
+	GPL2,
+	LGPL2,
+	GPL3,
+	LGPL3,
+	CC,
+	CC_BY_A,
+	//TODO: Add more license types.
 }
 
 public abstract class ContentFactory {
@@ -105,72 +117,37 @@ public class Content {
 		Constructs content type from data.
 	*/
 	public this(ubyte[] data) {
-		this.Type = data[0];
-		int namelen = bigEndianToNative!int(data[1..5]);
-		this.Name = cast(string)data[5..5+namelen];
-		this.data = data[1..data.length];
+		this.ConvertFull(data);
 	}
 
 	/**
 		Converts input bytes into this type of content.
 	*/
-	public abstract void Convert(ubyte[] data);
+	protected abstract void Convert(ubyte[] data);
+
+	public void ConvertFull(ubyte[] data) {
+		this.Type = data[0];
+		int name_len = bigEndianToNative!int(data[1..5]);
+		this.Name = cast(string)data[5..5+name_len];
+
+		ubyte[] d = data[5+name_len..$];
+		this.Convert(d);
+	}
 
 	/**
 		Returns an ubyte array of the compiled representation of the content.
 	*/
-	public abstract ubyte[] Compile();
+	protected abstract ubyte[] Compile();
 
 	public ubyte[] CompileFull() {
 		ubyte[] data = [this.Type];
-		ubyte[int.sizeof] n_len = nativeToBigEndian(cast(int)this.Name.length);
 		ubyte[] n = cast(ubyte[])this.Name;
+		ubyte[int.sizeof] n_len = nativeToBigEndian(cast(int)n.length);
 
 		data = Combine(data, n_len);
 		data = Combine(data, n);
 		return Combine(data, Compile());
 	}
-}
-
-public class RawContentFactory : ContentFactory {
-	public this() {
-		super(TypeId.Raw);
-	}
-
-	public override Content Construct(ubyte[] data) {
-		return new RawContent(data);
-	}
-}
-
-public class RawContent : Content {
-	public this(string name) {
-		super(TypeId.Raw, name);
-	}
-
-	public this(ubyte[] b) {
-		super(b);
-	}
-
-	public override void Convert(ubyte[] data) {
-		this.data = data;
-	}
-
-	public override ubyte[] Compile() {
-		return this.data;
-	}
-	
-}
-
-public enum ContentLicense : ubyte {
-	Propriatary,
-	MIT,
-	GPL2,
-	LGPL2,
-	GPL3,
-	LGPL3,
-	CC,
-	CC_BY_A,
-	//TODO: Add more license types.
 }
 
 public class ContentInfo {
@@ -195,22 +172,36 @@ public class ContentInfo {
 		Binary representation of the content info header portion.
 	*/
 	public @property ubyte[] Bytes() {
-		ubyte[4] author_len = nativeToBigEndian(cast(int)Author.length);
-		ubyte[] author = cast(ubyte[])Author;
 
-		ubyte[4] msg_len = nativeToBigEndian(cast(int)Message.length);
+		ubyte[] author = cast(ubyte[])Author;
+		ubyte[4] author_len = nativeToBigEndian(cast(int)author.length);
+
 		ubyte[] msg = cast(ubyte[])Message;
+		ubyte[4] msg_len = nativeToBigEndian(cast(int)msg.length);
 		
-		ubyte[] data = Combine(author_len, author);
-		data = Combine(data, msg_len);
-		data = Combine(data, msg);
-		return Combine(data, [License]);
+		return author_len ~ author ~ msg_len ~ msg ~ [cast(ubyte)License];
 	}
 
 	public this() {
 		this.Author = "Nobody";
 		this.License = ContentLicense.Propriatary;
 		this.Message = "<Insert Message Here>";
+	}
+
+	public static ContentInfo FromBytes(ubyte[] data) {
+		ContentInfo inf = new ContentInfo();
+		//Author Length
+		int author_len = bigEndianToNative!int(data[0..4]);
+
+		//Message Length
+		ubyte[4] msg_ba = data[4+author_len..4+author_len+4];
+		int msg_len = bigEndianToNative!int(msg_ba);
+		
+		//Set Author, Message and License.
+		inf.Author = cast(string)data[4..4+author_len];
+		inf.Message = cast(string)data[4+author_len+4..4+author_len+4+msg_len];
+		inf.License = cast(ContentLicense)data[$-1];
+		return inf;
 	}
 }
 
@@ -271,14 +262,36 @@ public class ContentFile {
 		Turn the Content class into a file-writable byte array.
 	*/
 	public ubyte[] Compile() {
-		ubyte[] ts = ContentHeader;
-		ts.length += 1;
-		ts[ts.length-1] = this.TypeID;
+		// Info
 		ubyte[] inf = this.Info.Bytes;
 		ubyte[8] infl = nativeToBigEndian(inf.length);
-		inf = Combine(infl, inf);
-		ts = Combine(ts, inf);
-		return Combine(ts, this.Data.CompileFull());
+
+		// Data
+		ubyte[] dat = this.Data.CompileFull();
+
+		return ContentHeader ~ [this.Type] ~ infl ~ inf ~ dat;
+	}
+
+	public static ContentFile ReadContentFile(ubyte[] data) {
+		// TODO: Make a check for the content headers presence (PPCoHead)
+
+		ContentFile cf = new ContentFile(cast(FileTypeId)data[ContentHeader.length]);
+
+		// Data
+		ubyte[] dat = data[ContentHeader.length+1..data.length];
+
+		// Info Length
+		ulong infl = bigEndianToNative!ulong(dat[0..8]);
+
+		// Info
+		cf.Info = ContentInfo.FromBytes(dat[8..8+infl]);
+		writeln(cf.Info.Author, ", ", cf.Info.License, ", ", cf.Info.Message);
+				
+		dat = dat[8+infl..dat.length];
+
+		//Data
+		cf.Data = from_file_data(dat);
+		return cf;
 	}
 }
 
@@ -286,15 +299,17 @@ public class ContentFile {
 	Adds a type to the type factory.
 */
 public void AddFactory(ContentFactory fac) {
-	factories[fac.Id] = fac;
+	factories[fac.Id.text] = fac;
 }
 
-private ContentFactory[ubyte] factories;
+private ContentFactory[string] factories;
+private bool factories_setup = false;
 
 /**
 	Imports all of the factories needed to build types automagically.
 */
 public void SetupBaseFactories() {
+	factories_setup = true;
 	AddFactory(new RawContentFactory());
 	AddFactory(new ImageFactory());
 	AddFactory(new BundleFactory());
@@ -302,8 +317,38 @@ public void SetupBaseFactories() {
 }
 
 private Content from_file_data(ubyte[] data) {
-	if(factories[data[0]] is null) throw new Exception("No content factory to handle type id " ~ data[0].text);
-	return factories[data[0]].Construct(data);
+	if (!factories_setup) throw new Exception("Base factories has not been set up, please run SetupBaseFactories();");
+	if(factories[data[0].text] is null) throw new Exception("No content factory to handle type id " ~ data[0].text);
+	return factories[data[0].text].Construct(data);
+}
+
+public class RawContentFactory : ContentFactory {
+	public this() {
+		super(TypeId.Raw);
+	}
+
+	public override Content Construct(ubyte[] data) {
+		return new RawContent(data);
+	}
+}
+
+public class RawContent : Content {
+	public this(string name) {
+		super(TypeId.Raw, name);
+	}
+
+	public this(ubyte[] b) {
+		super(b);
+	}
+
+	public override void Convert(ubyte[] data) {
+		this.data = data;
+	}
+
+	public override ubyte[] Compile() {
+		return this.data;
+	}
+	
 }
 
 public class ContentManager {
@@ -320,18 +365,14 @@ public class ContentManager {
 	*/
 	public static Content Load(string file) {
 		File f = File(file);
-		ubyte[ContentHeader.length] header;
-		ubyte[1] tyid;
 		ubyte[] data;
-
-		f.byChunk(header);
-		if (header != ContentHeader) throw new InvalidFileFormatException();
-		f.byChunk(tyid);
 		foreach(ubyte[] buff; f.byChunk(4096)) {
 			data = Combine(data, buff);
 		}
+
+		ContentFile fl = ContentFile.ReadContentFile(data);
 		f.close();
-		return from_file_data(data);
+		return fl.Data;
 	}
 	/*
 	public static Content LoadRaw(string file) {

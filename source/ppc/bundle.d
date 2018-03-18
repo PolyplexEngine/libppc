@@ -3,6 +3,7 @@ import ppc;
 import ppc.exceptions;
 import ppc.utils;
 
+import std.stdio;
 import std.conv;
 import std.bitmanip;
 
@@ -39,7 +40,9 @@ public class Bundle : Content {
 		// Load lookup table.
 		for (int i = 0; i < d_lookup_len; i++) {
 			d_lookup.length++;
-			s = this.data[ulong_size*i..ulong_size];
+			writeln(i.text);
+			ulong start = ulong_size+(ulong_size*i);
+			s = this.data[start..start+ulong_size];
 			d_lookup[d_lookup.length-1] = bigEndianToNative!ulong(s);
 		}
 

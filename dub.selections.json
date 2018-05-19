@@ -1,6 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"imageformats": "6.1.2"
+		"imageformats": "6.1.3",
+		"pp": "~master"
 	}
 }

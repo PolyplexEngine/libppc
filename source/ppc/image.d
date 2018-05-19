@@ -35,8 +35,7 @@ public class Image : Content {
 		super(data);
 	}
 
-	public override void Convert(ubyte[] data) {
-	}
+	public override void Convert(ubyte[] data) {}
 
 	public override ubyte[] Compile() {
 		return pp_write_img("png");

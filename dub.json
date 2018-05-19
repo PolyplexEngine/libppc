@@ -3,8 +3,48 @@
 	"authors": [
 		"Clipsey"
 	],
+	"subPackages": [
+		{
+			"name": "derelict-util",
+			"description": "Cross-platform shared library loader and a number of utility modules used by the Derelict libraries.",
+			"authors": ["Mike Parker", "Polyplex Developers"],
+			"license": "Boost",
+			"targetPath": "lib",
+			"libs-linux": ["dl"],
+			"sourcePaths": [ "modules/pp-derelict-util/source" ],
+			"importPaths": [ "modules/pp-derelict-util/source" ]
+		},
+		{
+			"name": "derelict-ogg",
+			"description": "A dynamic binding to the Ogg Vorbis api.",
+			"copyright": "Copyright © 2016, Mike Parker",
+			"authors": ["Mike Parker", "Polyplex Developers"],
+			"license": "BSL-1.0",
+			"targetPath": "lib",
+			"dependencies": {
+				"ppc:derelict-util": "*"
+			},
+			"sourcePaths": [ "modules/pp-derelict-ogg/source" ],
+			"importPaths": [ "modules/pp-derelict-ogg/source" ]
+		},
+		{
+			"name": "derelict-vorbis",
+			"description": "A dynamic binding to the libvorbis.",
+			"copyright": "Copyright © 2016, Mike Parker",
+			"authors": ["Mike Parker", "Polyplex Developers"],
+			"license": "BSL-1.0",
+			"targetPath": "lib",
+			"dependencies": {
+				"ppc:derelict-util": "*",
+				"ppc:derelict-ogg": "*"
+			},
+			"sourcePaths": [ "modules/pp-derelict-vorbis/source" ],
+			"importPaths": [ "modules/pp-derelict-vorbis/source" ]
+		}
+	],
 	"dependencies": {
-		"imageformats": "~>6.1.2"
+		"imageformats": "~>6.1.2",
+		"ppc:derelict-vorbis": "*"
 	},
 	"targetType": "dynamicLibrary",
 	"description": "Content managment for polyplex",

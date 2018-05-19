@@ -2,6 +2,8 @@ module ppc.image;
 import ppc;
 import imageformats;
 import std.stdio;
+import std.bitmanip;
+import std.functional;
 
 public class ImageFactory : ContentFactory {
 	public this() {
@@ -13,10 +15,17 @@ public class ImageFactory : ContentFactory {
 	}
 }
 
+public enum ImageStorageType {
+	PNG,
+	TGA,
+	PPIMG
+}
+
 public class Image : Content {
 	public long Width;
 	public long Height;
 	public ubyte[] Colors;
+	public ImageStorageType Type;
 
 	public this(string name) {
 		super(TypeId.Texture2D, name);
@@ -41,18 +50,29 @@ public class Image : Content {
 		write_image(name~".png", this.Width, this.Height, this.Colors);
 	}
 
+	private void create_ppimg(Writer w, long width, long height, in ubyte[] colors, long d)  {
+		w.rawWrite(nativeToBigEndian(cast(int)width));
+		w.rawWrite(nativeToBigEndian(cast(int)height));
+		w.rawWrite(colors);
+	}
+
+	private void create_png(Writer w, long width, long height, in ubyte[] colors, long d) {
+		import imageformats.png;
+		w.rawWrite(write_png_to_mem(width, height, colors, d));
+	}
+
+	private void create_tga(Writer w, long width, long height, in ubyte[] colors, long d) {
+		import imageformats.tga;
+		w.rawWrite(write_tga_to_mem(width, height, colors, d));
+	}
+
 	private ubyte[] pp_write_img(string extr) {
 		const(char)[] ext = extr;
-
-		void function(Writer, long, long, in ubyte[], long) write_image;
-		switch (ext) {
-			case "png": write_image = &write_png; break;
-			case "tga": write_image = &write_tga; break;
-			case "bmp": write_image = &write_bmp; break;
-			default: throw new ImageIOException("unknown image extension/type");
-		}
 		scope writer = new MemWriter();
-		write_image(writer, this.Width, this.Height, this.Colors, 0);
+		if (ext == "png") create_png(writer, this.Width, this.Height, this.Colors, 0);
+		else if (ext == "tga") create_tga(writer, this.Width, this.Height, this.Colors, 0);
+		else if (ext == "ppimg") create_ppimg(writer, this.Width, this.Height, this.Colors, 0);
+		else throw new Exception("Unknown format!");
 		return writer.result;
 	}
 }

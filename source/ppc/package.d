@@ -281,7 +281,7 @@ public class ContentFile {
 		ubyte[] dat = data[ContentHeader.length+1..data.length];
 
 		// Info Length
-		ulong infl = bigEndianToNative!ulong(dat[0..8]);
+		long infl = bigEndianToNative!long(dat[0..8]);
 
 		// Info
 		cf.Info = ContentInfo.FromBytes(dat[8..8+infl]);

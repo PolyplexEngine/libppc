@@ -15,7 +15,7 @@ public class ImageFactory : ContentFactory {
 	}
 }
 
-public enum ImageStorageType {
+public enum ImageStorageType : ubyte {
 	PNG,
 	TGA,
 	PPIMG
@@ -36,10 +36,6 @@ public class Image : Content {
 	}
 
 	public override void Convert(ubyte[] data) {
-		IFImage im = read_image_from_mem(data, ColFmt.RGBA);
-		this.Width = im.w;
-		this.Height = im.h;
-		this.Colors = im.pixels;
 	}
 
 	public override ubyte[] Compile() {
@@ -50,7 +46,29 @@ public class Image : Content {
 		write_image(name~".png", this.Width, this.Height, this.Colors);
 	}
 
+	private void load_image(ubyte[] data) {
+		this.Type = cast(ImageStorageType)data[0];
+		if (this.Type == ImageStorageType.PPIMG) ppimg_load(data[1..$]);
+		else if_load(data[1..$]);
+	}
+
+	private void ppimg_load(ubyte[] data) {
+		int w = bigEndianToNative!int(data[0..4]);
+		int h = bigEndianToNative!int(data[4..8]);
+		this.Colors = data[8..$];
+		this.Width = cast(long)w;
+		this.Height = cast(long)h;
+	}
+
+	private void if_load(ubyte[] data) {
+		IFImage im = read_image_from_mem(data, ColFmt.RGBA);
+		this.Width = im.w;
+		this.Height = im.h;
+		this.Colors = im.pixels;
+	}
+
 	private void create_ppimg(Writer w, long width, long height, in ubyte[] colors, long d)  {
+		w.rawWrite([this.Type]);
 		w.rawWrite(nativeToBigEndian(cast(int)width));
 		w.rawWrite(nativeToBigEndian(cast(int)height));
 		w.rawWrite(colors);
@@ -58,11 +76,13 @@ public class Image : Content {
 
 	private void create_png(Writer w, long width, long height, in ubyte[] colors, long d) {
 		import imageformats.png;
+		w.rawWrite([this.Type]);
 		w.rawWrite(write_png_to_mem(width, height, colors, d));
 	}
 
 	private void create_tga(Writer w, long width, long height, in ubyte[] colors, long d) {
 		import imageformats.tga;
+		w.rawWrite([this.Type]);
 		w.rawWrite(write_tga_to_mem(width, height, colors, d));
 	}
 

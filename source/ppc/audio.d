@@ -30,6 +30,10 @@ public class Audio : Content {
 	public long Length;
 	public AudioStorageType Type;
 
+	public this(string name) {
+		super(TypeId.Audio, name);
+	}
+
 	this(ubyte[] data) {
 		super(data);
 		this.Type = cast(AudioStorageType)data[0];

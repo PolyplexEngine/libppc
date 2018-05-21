@@ -35,7 +35,12 @@ public class Image : Content {
 		super(data);
 	}
 
-	public override void Convert(ubyte[] data) {}
+	public override void Convert(ubyte[] data, ubyte type) {
+		IFImage im = read_image_from_mem(data);
+		this.Width = im.w;
+		this.Height = im.h;
+		this.Colors = im.pixels;
+	}
 
 	public override ubyte[] Compile() {
 		return pp_write_img("png");

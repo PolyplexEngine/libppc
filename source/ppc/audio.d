@@ -1,4 +1,4 @@
-module ppc.sound;
+module ppc.audio;
 import ppc;
 import std.stdio;
 import std.bitmanip;
@@ -21,11 +21,6 @@ public enum AudioStorageType : ubyte {
 	PPSND
 }
 
-public enum AudioType : ubyte {
-	Sound,
-	Music
-}
-
 public class Audio : Content {
 	public byte[] Samples;
 	private byte[] oggdat;
@@ -33,21 +28,22 @@ public class Audio : Content {
 	public int Channels;
 	public long SampleRate;
 	public long Length;
-	public AudioType AType;
 	public AudioStorageType Type;
 
 	this(ubyte[] data) {
 		super(data);
 		this.Type = cast(AudioStorageType)data[0];
 		if (this.Type == AudioStorageType.OGG) {
+			oggdat = cast(byte[])data[1..$];
 			parse_audio_ogg(data[1..$]);
 		} else {
-
+			parse_audio_ppsnd(data[1..$]);
 		}
 	}
 
-	public override void Convert(ubyte[] data) {
-
+	public override void Convert(ubyte[] data, ubyte type) {
+		this.Type = cast(AudioStorageType)type;
+		parse_audio_ogg(data);
 	}
 
 	public override ubyte[] Compile() {

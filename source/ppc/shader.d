@@ -83,7 +83,7 @@ public class Shader : Content {
 		}
 	}
 	
-	public override void Convert(ubyte[] data) {
+	public override void Convert(ubyte[] data, ubyte type) {
 		// Do Nothing, nonconvertible type for now
 	}
 

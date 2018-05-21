@@ -2,6 +2,7 @@ module ppc;
 public import ppc.image;
 public import ppc.bundle;
 public import ppc.shader;
+public import ppc.audio;
 
 public import ppc.exceptions;
 import ppc.utils;
@@ -117,21 +118,21 @@ public class Content {
 		Constructs content type from data.
 	*/
 	public this(ubyte[] data) {
-		this.ConvertFull(data);
+		this.ConvertFull(data, 0);
 	}
 
 	/**
 		Converts input bytes into this type of content.
 	*/
-	protected abstract void Convert(ubyte[] data);
+	protected abstract void Convert(ubyte[] data, ubyte type);
 
-	public void ConvertFull(ubyte[] data) {
+	public void ConvertFull(ubyte[] data, ubyte type) {
 		this.Type = data[0];
 		int name_len = bigEndianToNative!int(data[1..5]);
 		this.Name = cast(string)data[5..5+name_len];
 
 		ubyte[] d = data[5+name_len..$];
-		this.Convert(d);
+		this.Convert(d, type);
 	}
 
 	/**
@@ -338,7 +339,7 @@ public class RawContent : Content {
 		super(b);
 	}
 
-	public override void Convert(ubyte[] data) {
+	public override void Convert(ubyte[] data, ubyte type) {
 		this.data = data;
 	}
 

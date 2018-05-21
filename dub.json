@@ -46,6 +46,11 @@
 		"imageformats": "~>6.1.2",
 		"ppc:derelict-vorbis": "*"
 	},
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"alwaysStackFrame"
+	],
 	"targetType": "dynamicLibrary",
 	"description": "Content managment for polyplex",
 	"copyright": "Copyright © 2018, Clipsey",

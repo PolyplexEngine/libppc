@@ -47,10 +47,10 @@ private {
 
 struct ov_callbacks {
     extern(C) nothrow {
-        size_t function(void*, size_t, size_t, void*) read_func;
-        int function(void*, ogg_int64_t, int) seek_func;
-        int function(void*) close_func;
-        c_long function(void*) tell_func;
+        size_t delegate(void*, size_t, size_t, void*) read_func;
+        int delegate(void*, ogg_int64_t, int) seek_func;
+        int delegate(void*) close_func;
+        c_long delegate(void*) tell_func;
     }
 }
 
@@ -139,33 +139,6 @@ private extern (C) nothrow {
     c_long Derelict_VorbisTell(void* datasource) {
         return cast(c_long)ftell(cast(FILE*)datasource);
     }
-}
-
-// ov_open is rewritten below because of incompatibility between compilers with FILE struct
-// Using this wrapper, it *should* work exactly as it would in c++. --JoeCoder
-int ov_open(FILE* f, OggVorbis_File* vf, const(char)* initial, c_long ibytes)
-{
-    // Fill the ov_callbacks structure
-    ov_callbacks vorbisCallbacks;    // Structure to hold pointers to callback functions
-    vorbisCallbacks.read_func  = &Derelict_VorbisRead;
-    vorbisCallbacks.close_func = &Derelict_VorbisClose;
-    vorbisCallbacks.seek_func  = &Derelict_VorbisSeek;
-    vorbisCallbacks.tell_func  = &Derelict_VorbisTell;
-
-    return ov_open_callbacks(cast(void*)f, vf, initial, cast(int)ibytes, vorbisCallbacks);
-}
-
-// ditto for ov_test
-int ov_test(FILE* f, OggVorbis_File* vf, const(char)* initial, c_long ibytes)
-{
-    // Fill the ov_callbacks structure
-    ov_callbacks vorbisCallbacks;    // Structure to hold pointers to callback functions
-    vorbisCallbacks.read_func  = &Derelict_VorbisRead;
-    vorbisCallbacks.close_func = &Derelict_VorbisClose;
-    vorbisCallbacks.seek_func  = &Derelict_VorbisSeek;
-    vorbisCallbacks.tell_func  = &Derelict_VorbisTell;
-
-    return ov_test_callbacks(cast(void*)f, vf, initial, cast(int)ibytes, vorbisCallbacks);
 }
 
 __gshared {

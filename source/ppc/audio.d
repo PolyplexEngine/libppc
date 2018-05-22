@@ -22,8 +22,8 @@ public enum AudioStorageType : ubyte {
 }
 
 public class Audio : Content {
-	public byte[] Samples;
-	private byte[] oggdat;
+	public ubyte[] Samples;
+	private ubyte[] oggdat;
 
 	public int Channels;
 	public long SampleRate;
@@ -38,7 +38,7 @@ public class Audio : Content {
 		super(data);
 		this.Type = cast(AudioStorageType)data[0];
 		if (this.Type == AudioStorageType.OGG) {
-			oggdat = cast(byte[])data[1..$];
+			oggdat = data[1..$];
 			parse_audio_ogg(data[1..$]);
 		} else {
 			parse_audio_ppsnd(data[1..$]);
@@ -76,6 +76,7 @@ public class Audio : Content {
 	public void parse_audio_ogg(ubyte[] data) {
 		// Load libogg, libvorbis and libvorbisfile, if not already.
 		if (!has_vorbis_loaded) LoadVorbis();
+		oggdat = data;
 
 		auto dat = data.ptr;
 

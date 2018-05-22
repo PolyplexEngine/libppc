@@ -312,10 +312,11 @@ public void SetupBaseFactories() {
 	AddFactory(new ImageFactory());
 	AddFactory(new BundleFactory());
 	AddFactory(new ShaderFactory());
+	AddFactory(new AudioFactory());
 }
 
 private Content from_file_data(ubyte[] data) {
-	if (!factories_setup) throw new Exception("Base factories has not been set up, please run SetupBaseFactories();");
+	if (!factories_setup) SetupBaseFactories(); //throw new Exception("Base factories has not been set up, please run SetupBaseFactories();");
 	if(factories[data[0].text] is null) throw new Exception("No content factory to handle type id " ~ data[0].text);
 	return factories[data[0].text].Construct(data);
 }

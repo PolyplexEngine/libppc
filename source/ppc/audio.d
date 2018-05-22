@@ -26,7 +26,7 @@ public class Audio : Content {
 	private ubyte[] oggdat;
 
 	public int Channels;
-	public long SampleRate;
+	public int SampleRate;
 	public long Length;
 	public AudioStorageType Type;
 
@@ -64,8 +64,8 @@ public class Audio : Content {
 	private static bool has_vorbis_loaded = false;
 	public static void LoadVorbis() {
 		DerelictOgg.load();
-		DerelictVorbis.load("libs/libvorbis.so");
-		DerelictVorbisFile.load("libs/libvorbisfile.so");
+		DerelictVorbis.load();
+		DerelictVorbisFile.load();
 		has_vorbis_loaded = true;
 	}
 
@@ -102,28 +102,31 @@ public class Audio : Content {
 		// Get info about stream.	
 		vorbis_info* v_info = ov_info(&file, -1);
 		
+	
 		// Amount of channels in ogg file
 		this.Channels = v_info.channels;
 
 		// The sampling rate
 		this.SampleRate = v_info.rate;
 
-		// The length (of total pcm samples)
-		this.Length = cast(long)ov_pcm_total(&file, -1);
-
 		// Read file to buffer
 		byte[4096] buff;
 		int current_section = 0;
 		while (true) {
 			long bytes_read = ov_read(&file, buff.ptr, 4096, 0, 2, 1, &current_section);
-
 			// End of file, no bytes read.
 			if (bytes_read == 0) break;
 			if (bytes_read == OV_HOLE) throw new Exception("Flow of data interrupted! Corrupt page?");
 			if (bytes_read == OV_EBADLINK) throw new Exception("Stream section or link corrupted!");
 			if (bytes_read == OV_EINVAL) throw new Exception("Initial file headers unreadable or corrupt!");
-			Samples ~= buff;
+			Samples ~= buff[0..bytes_read];
 		}
+		version(BigEndian) {
+			import std.algorithm.mutation;
+			Samples.reverse;
+		}
+
+		this.Length = cast(int)Samples.length;
 
 		// Clears the ogg file data from memory.
 		if (ov_clear(&file) != 0) {

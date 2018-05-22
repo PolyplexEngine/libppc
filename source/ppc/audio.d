@@ -174,11 +174,10 @@ private extern (C) nothrow {
 		return 0;
 	}
 
-	extern (C) size_t pp_read(void* data, size_t bytes, size_t tr, void* source) {
+	extern (C) size_t pp_read(void* data, size_t bytes, size_t to_read, void* source) {
 		fakefile* ff = cast(fakefile*)source;
 		
 		// Patch cus d hates this apparently.
-		size_t to_read = 2048;
 		size_t len = bytes*to_read;
 		if (ff.readhead + len > ff.arrayptr+ff.length) {
 			len = ff.arrayptr+ff.length-ff.readhead;

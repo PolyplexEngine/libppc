@@ -47,10 +47,10 @@ private {
 
 struct ov_callbacks {
     extern(C) nothrow {
-        size_t delegate(void*, size_t, size_t, void*) read_func;
-        int delegate(void*, ogg_int64_t, int) seek_func;
-        int delegate(void*) close_func;
-        c_long delegate(void*) tell_func;
+        size_t function(void*, size_t, size_t, void*) read_func;
+        int function(void*, ogg_int64_t, int) seek_func;
+        int function(void*) close_func;
+        c_long function(void*) tell_func;
     }
 }
 

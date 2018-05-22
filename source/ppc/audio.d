@@ -64,8 +64,8 @@ public class Audio : Content {
 	private static bool has_vorbis_loaded = false;
 	public static void LoadVorbis() {
 		DerelictOgg.load();
-		DerelictVorbis.load();
-		DerelictVorbisFile.load();
+		DerelictVorbis.load("libs/libvorbis.so");
+		DerelictVorbisFile.load("libs/libvorbisfile.so");
 		has_vorbis_loaded = true;
 	}
 
@@ -73,79 +73,36 @@ public class Audio : Content {
 
 	}
 
-	private extern (C) nothrow {
-		import core.stdc.config;
-		import core.stdc.stdlib;
-		struct fakefile {
-			ubyte* arrayptr;
-			size_t length;
-			ubyte* readhead;
-		}
-
-		extern (C) int pp_seek(void* data, ogg_int64_t offset, int whence) {
-			fakefile* ff = cast(fakefile*)data;
-			if (whence == SEEK_SET) {
-				ff.readhead = cast(ubyte*)(cast(size_t)ff.arrayptr+cast(size_t)offset);
-				return 0;
-			}
-			if (whence == SEEK_CUR) {
-				ff.readhead = cast(ubyte*)(cast(size_t)ff.readhead+cast(size_t)offset);
-				return 0;
-			}
-			if (whence == SEEK_END) {
-				ff.readhead = cast(ubyte*)(cast(size_t)ff.arrayptr+cast(size_t)ff.length);
-				return 0;
-			}
-			return -1;
-		}
-
-		extern (C) size_t pp_read(void* data, size_t bytes, size_t to_read, void* source) {
-			fakefile* ff = cast(fakefile*)source;
-			void* odat = malloc(bytes*to_read);
-			void* odat_writehead = odat;
-			ubyte* read_end = cast(ubyte*)(cast(size_t)ff.readhead+(cast(size_t)bytes*cast(size_t)to_read));
-			size_t bytes_written = 0;
-			while (ff.readhead < read_end) {
-				*cast(ubyte*)odat_writehead = *cast(ubyte*)ff.readhead;
-				odat_writehead++;
-				ff.readhead++;
-				bytes_written++;
-			}
-			*cast(ubyte*)data = *cast(ubyte*)odat;
-			free(odat);
-			free(odat_writehead);
-			free(read_end);
-			free(&bytes_written);
-			return bytes_written;
-		}
-
-		extern (C) c_long pp_tell(void* data) {
-			fakefile* ff = cast(fakefile*)data;
-			return cast(c_long)ff.arrayptr-cast(c_long)ff.readhead;
-		}
-	}
-
 	public void parse_audio_ogg(ubyte[] data) {
 		// Load libogg, libvorbis and libvorbisfile, if not already.
 		if (!has_vorbis_loaded) LoadVorbis();
 
-		fakefile ff = fakefile(data.ptr, data.length, null);
+		auto dat = data.ptr;
 
 		// Load file from byte array.
-		OggVorbis_File* file;
+		OggVorbis_File file;
+
+		fakefile fake;
+		fake.arrayptr = dat;
+		fake.readhead = dat;
+		fake.length = data.length;
+
+		// Callbacks
 		ov_callbacks callbacks;
-		callbacks.seek_func = &pp_seek;
 		callbacks.read_func = &pp_read;
+		callbacks.seek_func = &pp_seek;
+		callbacks.close_func = &pp_close;
 		callbacks.tell_func = &pp_tell;
-		
-		if (ov_open_callbacks(&ff, file, null, 0, callbacks) < 0) {
+
+		writeln("open_callbacks");
+		if (ov_open_callbacks(&fake, &file, null, 0, callbacks) < 0) {
 			writeln("A");
 			throw new Exception("Audio does not seem to be an ogg bitstream!...");
 		}
 		writeln("A");
 
 		// Get info about stream.	
-		vorbis_info* v_info = ov_info(file, -1);
+		vorbis_info* v_info = ov_info(&file, -1);
 		
 		// Amount of channels in ogg file
 		this.Channels = v_info.channels;
@@ -154,14 +111,14 @@ public class Audio : Content {
 		this.SampleRate = v_info.rate;
 
 		// The length (of total pcm samples)
-		this.Length = cast(long)ov_pcm_total(file, -1);
+		this.Length = cast(long)ov_pcm_total(&file, -1);
 		writeln("A");
 
 		// Read file to buffer
 		byte[4096] buff;
 		int current_section = 0;
 		while (true) {
-			long bytes_read = ov_read(file, buff.ptr, 4096, 0, 2, 1, &current_section);
+			long bytes_read = ov_read(&file, buff.ptr, 4096, 0, 2, 1, &current_section);
 			writeln("A");
 
 			// End of file, no bytes read.
@@ -174,8 +131,74 @@ public class Audio : Content {
 		writeln("A");
 
 		// Clears the ogg file data from memory.
-		if (ov_clear(file) != 0) {
+		if (ov_clear(&file) != 0) {
 			throw new Exception("Failed to do cleanup of vorbis file data!");
 		}
+	}
+}
+
+private extern (C) nothrow {
+	import core.stdc.config;
+	import core.stdc.stdlib;
+	import core.stdc.string;
+
+	struct fakefile {
+		ubyte* arrayptr;
+		ubyte* readhead;
+		size_t length;
+	}
+	
+	extern (C) int pp_seek(void* data, ogg_int64_t offset, int whence) {
+		printf("pp_seek\n");
+		fakefile* ff = cast(fakefile*)data;
+		switch (whence) {
+			case SEEK_CUR:
+				ff.readhead += offset;
+				break;
+			case SEEK_SET:
+				ff.readhead = ff.arrayptr + offset;
+				break;
+			case SEEK_END:
+				ff.readhead = ff.arrayptr + ff.length-offset;
+				break;
+			default:
+				return -1;
+		}
+
+		if (ff.readhead < ff.arrayptr) {
+			ff.readhead = ff.arrayptr;
+			return -1;
+		}
+
+		if (ff.readhead > ff.arrayptr + ff.length) {
+			ff.readhead = ff.arrayptr + ff.length;
+		}
+
+		return 0;
+	}
+
+	extern (C) size_t pp_read(void* data, size_t bytes, size_t tr, void* source) {
+		fakefile* ff = cast(fakefile*)source;
+		printf("pp_read %d %d %d\n", ff.arrayptr, ff.length, ff.readhead);
+		
+		// Patch cus d hates this apparently.
+		size_t to_read = 2048;
+		size_t len = bytes*to_read;
+		if (ff.readhead + len > ff.arrayptr+ff.length) {
+			len = ff.arrayptr+ff.length-ff.readhead;
+		}
+		memcpy(data, ff.readhead, len);
+		ff.readhead += len;
+		return len;
+	}
+
+	extern (C) int pp_close(void* data) {
+		printf("pp_close (stub)\n");
+		return 0;
+	}
+
+	extern (C) c_long pp_tell(void* data) {
+		fakefile* ff = cast(fakefile*)data;
+		return ff.readhead-ff.arrayptr;
 	}
 }

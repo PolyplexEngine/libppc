@@ -94,12 +94,9 @@ public class Audio : Content {
 		callbacks.close_func = &pp_close;
 		callbacks.tell_func = &pp_tell;
 
-		writeln("open_callbacks");
 		if (ov_open_callbacks(&fake, &file, null, 0, callbacks) < 0) {
-			writeln("A");
 			throw new Exception("Audio does not seem to be an ogg bitstream!...");
 		}
-		writeln("A");
 
 		// Get info about stream.	
 		vorbis_info* v_info = ov_info(&file, -1);
@@ -112,14 +109,12 @@ public class Audio : Content {
 
 		// The length (of total pcm samples)
 		this.Length = cast(long)ov_pcm_total(&file, -1);
-		writeln("A");
 
 		// Read file to buffer
 		byte[4096] buff;
 		int current_section = 0;
 		while (true) {
 			long bytes_read = ov_read(&file, buff.ptr, 4096, 0, 2, 1, &current_section);
-			writeln("A");
 
 			// End of file, no bytes read.
 			if (bytes_read == 0) break;
@@ -128,7 +123,6 @@ public class Audio : Content {
 			if (bytes_read == OV_EINVAL) throw new Exception("Initial file headers unreadable or corrupt!");
 			Samples ~= buff;
 		}
-		writeln("A");
 
 		// Clears the ogg file data from memory.
 		if (ov_clear(&file) != 0) {
@@ -147,7 +141,7 @@ private extern (C) nothrow {
 		ubyte* readhead;
 		size_t length;
 	}
-	
+
 	extern (C) int pp_seek(void* data, ogg_int64_t offset, int whence) {
 		printf("pp_seek\n");
 		fakefile* ff = cast(fakefile*)data;
@@ -179,7 +173,6 @@ private extern (C) nothrow {
 
 	extern (C) size_t pp_read(void* data, size_t bytes, size_t tr, void* source) {
 		fakefile* ff = cast(fakefile*)source;
-		printf("pp_read %d %d %d\n", ff.arrayptr, ff.length, ff.readhead);
 		
 		// Patch cus d hates this apparently.
 		size_t to_read = 2048;

@@ -143,7 +143,6 @@ private extern (C) nothrow {
 	}
 
 	extern (C) int pp_seek(void* data, ogg_int64_t offset, int whence) {
-		printf("pp_seek\n");
 		fakefile* ff = cast(fakefile*)data;
 		switch (whence) {
 			case SEEK_CUR:
@@ -186,7 +185,6 @@ private extern (C) nothrow {
 	}
 
 	extern (C) int pp_close(void* data) {
-		printf("pp_close (stub)\n");
 		return 0;
 	}
 

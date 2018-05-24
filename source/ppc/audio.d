@@ -22,19 +22,73 @@ public enum AudioStorageType : ubyte {
 }
 
 public class Audio : Content {
-	public ubyte[] Samples;
+	private static bool has_vorbis_loaded = false;
+	/**
+		Don't run this.
+		Is automatically run to load OGG Vorbis libraries.
+	*/
+	public static void LoadVorbis() {
+		DerelictOgg.load();
+		DerelictVorbis.load();
+		DerelictVorbisFile.load();
+		has_vorbis_loaded = true;
+	}
+
 	private ubyte[] oggdat;
 
+	/**
+		Gets if the audio is to be streamed.
+	*/
+	public bool Streamed;
+
+	//TODO: Implement streamed audio.
+
+	/**
+		The sample data.
+		If Streamed is true, it contains the samples of the current frame, and needs to be updated.
+		else, it contains the entire PCM data for the sound.
+
+		(TODO: Implement streamed audio)
+	*/
+	public ubyte[] Samples;
+
+	/**
+		The amount of channels.
+	*/
 	public int Channels;
+
+	/**
+		The sample rate of the audio
+	*/
 	public int SampleRate;
+
+	/**
+		The amount of sample data (bytes)
+	*/
 	public long Length;
+
+	/**
+		The amount of PCM samples (single channel)
+	*/
+	public long PCMLength;
+
+	/**
+		What kind of storage is used for the audio content.
+		Either ogg or ppsnd
+	*/
 	public AudioStorageType Type;
 
+	/**
+		Constructor
+	*/
 	public this(string name) {
 		super(TypeId.Audio, name);
 	}
 
-	this(ubyte[] data) {
+	/**
+		Constructor
+	*/
+	public this(ubyte[] data) {
 		super(data);
 		this.Type = cast(AudioStorageType)data[0];
 		if (this.Type == AudioStorageType.OGG) {
@@ -45,11 +99,17 @@ public class Audio : Content {
 		}
 	}
 
+	/**
+		Converts an OGG to a PPC ready OGG (or PPSND if chosen)
+	*/
 	public override void Convert(ubyte[] data, ubyte type) {
 		this.Type = cast(AudioStorageType)type;
 		parse_audio_ogg(data);
 	}
 
+	/**
+		Compiles the sound in to the PPC format.
+	*/
 	public override ubyte[] Compile() {
 		ubyte type = cast(ubyte)this.Type;
 		if (Type == AudioStorageType.OGG) {
@@ -61,23 +121,17 @@ public class Audio : Content {
 		return [];
 	}
 
-	private static bool has_vorbis_loaded = false;
-	public static void LoadVorbis() {
-		DerelictOgg.load();
-		DerelictVorbis.load();
-		DerelictVorbisFile.load();
-		has_vorbis_loaded = true;
-	}
-
-	public void parse_audio_ppsnd(ubyte[] data) {
+	private void parse_audio_ppsnd(ubyte[] data) {
 
 	}
 
-	public void parse_audio_ogg(ubyte[] data) {
+	private void parse_audio_ogg(ubyte[] data) {
 		// Load libogg, libvorbis and libvorbisfile, if not already.
 		if (!has_vorbis_loaded) LoadVorbis();
-		oggdat = data;
 
+		// Be as sure as possible that the GC doesn't mess with the audio data.
+		// Aswell, move ogg data over to oggdat (so that compiling OGG PPSND is possible)
+		oggdat = data;
 		auto dat = data.ptr;
 
 		// Load file from byte array.
@@ -101,7 +155,6 @@ public class Audio : Content {
 
 		// Get info about stream.	
 		vorbis_info* v_info = ov_info(&file, -1);
-		
 	
 		// Amount of channels in ogg file
 		this.Channels = v_info.channels;
@@ -126,6 +179,7 @@ public class Audio : Content {
 			Samples.reverse;
 		}
 
+		// The length in bytes
 		this.Length = cast(int)Samples.length;
 
 		// Clears the ogg file data from memory.
@@ -177,7 +231,6 @@ private extern (C) nothrow {
 	extern (C) size_t pp_read(void* data, size_t bytes, size_t to_read, void* source) {
 		fakefile* ff = cast(fakefile*)source;
 		
-		// Patch cus d hates this apparently.
 		size_t len = bytes*to_read;
 		if (ff.readhead + len > ff.arrayptr+ff.length) {
 			len = ff.arrayptr+ff.length-ff.readhead;

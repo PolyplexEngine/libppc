@@ -162,6 +162,9 @@ public class Audio : Content {
 		// The sampling rate
 		this.SampleRate = v_info.rate;
 
+		// The amount of PCM data, as told by libvorbisfile.
+		this.PCMLength = cast(ulong)ov_pcm_total(&file, -1);
+
 		// Read file to buffer
 		byte[4096] buff;
 		int current_section = 0;

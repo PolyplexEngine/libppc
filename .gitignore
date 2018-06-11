@@ -24,3 +24,6 @@ docs/
 *.lst
 
 lib*
+
+dub.selections.json
+.dub/

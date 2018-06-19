@@ -142,7 +142,7 @@ public class Content {
 
 	public ubyte[] CompileFull() {
 		auto n = cast(ubyte[])this.Name;
-		return [this.Type] ~ n ~ nativeToBigEndian(cast(int)n.length) ~ Compile();
+		return [this.Type] ~ nativeToBigEndian(cast(int)n.length) ~ n ~ Compile();
 	}
 }
 

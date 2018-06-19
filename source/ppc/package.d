@@ -141,13 +141,8 @@ public class Content {
 	protected abstract ubyte[] Compile();
 
 	public ubyte[] CompileFull() {
-		ubyte[] data = [this.Type];
-		ubyte[] n = cast(ubyte[])this.Name;
-		ubyte[int.sizeof] n_len = nativeToBigEndian(cast(int)n.length);
-
-		data = Combine(data, n_len);
-		data = Combine(data, n);
-		return Combine(data, Compile());
+		auto n = cast(ubyte[])this.Name;
+		return [this.Type] ~ n ~ nativeToBigEndian(cast(int)n.length) ~ Compile();
 	}
 }
 

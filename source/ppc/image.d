@@ -33,6 +33,7 @@ public class Image : Content {
 
 	this(ubyte[] data) {
 		super(data);
+		load_image(data);
 	}
 
 	public override void Convert(ubyte[] data, ubyte type) {

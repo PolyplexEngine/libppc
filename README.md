@@ -8,4 +8,4 @@ libppc is a library for reading and writing Polyplex content files, for use with
 ## Notice
 This is still early work in progress.
 
-[logo]: http://git.pplex.org/Polyplex/ppbranding/raw/master/polyplex3.jpg
+[logo]: https://git.pplex.org/Polyplex/ppbranding/raw/commit/8982fef1b3ecf82e2a11ecd6595a08e4fa1998f2/light_transparent@256w.png

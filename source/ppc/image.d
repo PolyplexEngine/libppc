@@ -33,7 +33,6 @@ public class Image : Content {
 
 	this(ubyte[] data) {
 		super(data);
-		load_image(data);
 	}
 
 	public override void Convert(ubyte[] data, ubyte type) {
@@ -73,7 +72,6 @@ public class Image : Content {
 	}
 
 	private void create_ppimg(Writer w, long width, long height, in ubyte[] colors, long d)  {
-		w.rawWrite([this.Type]);
 		w.rawWrite(nativeToBigEndian(cast(int)width));
 		w.rawWrite(nativeToBigEndian(cast(int)height));
 		w.rawWrite(colors);
@@ -81,20 +79,18 @@ public class Image : Content {
 
 	private void create_png(Writer w, long width, long height, in ubyte[] colors, long d) {
 		import imageformats.png;
-		w.rawWrite([this.Type]);
 		w.rawWrite(write_png_to_mem(width, height, colors, d));
 	}
 
 	private void create_tga(Writer w, long width, long height, in ubyte[] colors, long d) {
 		import imageformats.tga;
-		w.rawWrite([this.Type]);
 		w.rawWrite(write_tga_to_mem(width, height, colors, d));
 	}
 
-	private ubyte[] pp_write_img(string extr) {
-		const(char)[] ext = extr;
+	private ubyte[] pp_write_img(string ext) {
 		scope writer = new MemWriter();
-		if (ext == "png") create_png(writer, this.Width, this.Height, this.Colors, 0);
+		writer.rawWrite([this.Type]);
+		if (ext == "png") create_png(writer, this.Width, this.Height, this.Colors, 1);
 		else if (ext == "tga") create_tga(writer, this.Width, this.Height, this.Colors, 0);
 		else if (ext == "ppimg") create_ppimg(writer, this.Width, this.Height, this.Colors, 0);
 		else throw new Exception("Unknown format!");

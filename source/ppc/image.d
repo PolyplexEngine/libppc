@@ -94,7 +94,7 @@ public class Image : Content {
 	private ubyte[] pp_write_img(string ext) {
 		scope writer = new MemWriter();
 		writer.rawWrite([this.Type]);
-		if (ext == "png") create_png(writer, this.Width, this.Height, this.Colors, 1);
+		if (ext == "png") create_png(writer, this.Width, this.Height, this.Colors, 0);
 		else if (ext == "tga") create_tga(writer, this.Width, this.Height, this.Colors, 0);
 		else if (ext == "ppimg") create_ppimg(writer, this.Width, this.Height, this.Colors, 0);
 		else throw new Exception("Unknown format!");

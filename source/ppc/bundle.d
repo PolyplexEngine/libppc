@@ -28,6 +28,17 @@ public class Bundle : Content {
 
 	public this(ubyte[] data) {
 		super(data);
+	}
+
+	public void Add(Content cont) {
+		BundleContents[cont.Name] = cont;
+	}
+
+	public override void Convert(ubyte[] data, ubyte type) {
+		// Do Nothing, nonconvertible type for now
+	}
+
+	public override void Load(ubyte[] data) {
 		ulong[] d_lookup = [];
 		Content[] d_cont = [];
 
@@ -62,14 +73,6 @@ public class Bundle : Content {
 		foreach(Content c; d_cont) {
 			this.BundleContents[c.Name] = c;
 		}
-	}
-
-	public void Add(Content cont) {
-		BundleContents[cont.Name] = cont;
-	}
-
-	public override void Convert(ubyte[] data, ubyte type) {
-		// Do Nothing, nonconvertible type for now
 	}
 
 	public override ubyte[] Compile() {

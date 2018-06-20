@@ -107,6 +107,11 @@ public class Audio : Content {
 		parse_audio_ogg(data);
 	}
 
+	public override void Load(ubyte[] data) {
+		this.Type = cast(AudioStorageType)data[0];
+		parse_audio_ogg(data[1..$]);
+	}
+
 	/**
 		Compiles the sound in to the PPC format.
 	*/

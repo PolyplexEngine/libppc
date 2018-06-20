@@ -117,8 +117,22 @@ public class Content {
 	/**
 		Constructs content type from data.
 	*/
-	public this(ubyte[] data) {
-		this.ConvertFull(data, 0);
+	public this(ubyte[] data, bool convert = false) {
+		if (convert) this.ConvertFull(data, 0);
+		else this.LoadFull(data);
+	}
+
+	/**
+		Loads input bytes into this type of content.
+	*/
+	public abstract void Load(ubyte[] data);
+
+	public void LoadFull(ubyte[] data) {
+		this.Type = data[0];
+		int name_len = bigEndianToNative!int(data[1..5]);
+
+		this.Name = cast(string)data[5..5+name_len];
+		this.Load(data[5+name_len..$]);
 	}
 
 	/**
@@ -127,7 +141,7 @@ public class Content {
 	protected abstract void Convert(ubyte[] data, ubyte type);
 
 	public void ConvertFull(ubyte[] data, ubyte type) {
-		this.Type = data[0];
+		this.Type = type;
 		int name_len = bigEndianToNative!int(data[1..5]);
 		this.Name = cast(string)data[5..5+name_len];
 
@@ -336,6 +350,10 @@ public class RawContent : Content {
 	}
 
 	public override void Convert(ubyte[] data, ubyte type) {
+		this.data = data;
+	}
+
+	public override void Load(ubyte[] data) {
 		this.data = data;
 	}
 

@@ -57,6 +57,13 @@ public class Shader : Content {
 
 	public this(ubyte[] data) {
 		super(data);
+	}
+	
+	public override void Convert(ubyte[] data, ubyte type) {
+		// Do Nothing, nonconvertible type for now
+	}
+
+	public override void Load(ubyte[] data) {
 		this.Type = cast(ShaderType)this.data[0];
 		bool done = false;
 		int i = 1;
@@ -81,10 +88,6 @@ public class Shader : Content {
 			//Finish off loading the shader code, if no more data is left.
 			if (i+1 >= this.data.length) done = true;
 		}
-	}
-	
-	public override void Convert(ubyte[] data, ubyte type) {
-		// Do Nothing, nonconvertible type for now
 	}
 
 	public void Add(ShaderCode code) {

@@ -42,6 +42,10 @@ public class Image : Content {
 		this.Colors = im.pixels;
 	}
 
+	public override void Load(ubyte[] data) {
+		load_image(data);
+	}
+
 	public override ubyte[] Compile() {
 		return pp_write_img("png");
 	}

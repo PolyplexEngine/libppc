@@ -27,3 +27,5 @@ lib*
 
 dub.selections.json
 .dub/
+
+ppc.lock

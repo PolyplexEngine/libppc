@@ -34,44 +34,6 @@ public class Audio : Content {
 		has_vorbis_loaded = true;
 	}
 
-	private ubyte[] oggdat;
-
-	/**
-		Gets if the audio is to be streamed.
-	*/
-	public bool Streamed;
-
-	//TODO: Implement streamed audio.
-
-	/**
-		The sample data.
-		If Streamed is true, it contains the samples of the current frame, and needs to be updated.
-		else, it contains the entire PCM data for the sound.
-
-		(TODO: Implement streamed audio)
-	*/
-	public ubyte[] Samples;
-
-	/**
-		The amount of channels.
-	*/
-	public int Channels;
-
-	/**
-		The sample rate of the audio
-	*/
-	public int SampleRate;
-
-	/**
-		The amount of sample data (bytes)
-	*/
-	public long Length;
-
-	/**
-		The amount of PCM samples (single channel)
-	*/
-	public long PCMLength;
-
 	/**
 		What kind of storage is used for the audio content.
 		Either ogg or ppsnd
@@ -129,15 +91,43 @@ public class Audio : Content {
 	private void parse_audio_ppsnd(ubyte[] data) {
 
 	}
+}
 
-	private void parse_audio_ogg(ubyte[] data) {
+public struct AudioBuffer {
+	private ubyte[] oggdat;
+	private OggVorbis_File file;
+	private int currentSection = 0;
+
+	/**
+		Gets if the audio is to be streamed.
+	*/
+	public bool Streamed;
+
+	/**
+		The amount of channels.
+	*/
+	public int Channels;
+
+	/**
+		The sample rate of the audio
+	*/
+	public int SampleRate;
+
+	/**
+		The amount of sample data (bytes)
+	*/
+	public long Length;
+
+	/**
+		The amount of PCM samples (single channel)
+	*/
+	public long PCMLength;
+
+	this(ubyte[] oggFile) {
 		// Load libogg, libvorbis and libvorbisfile, if not already.
 		if (!has_vorbis_loaded) LoadVorbis();
 
-		// Be as sure as possible that the GC doesn't mess with the audio data.
-		// Aswell, move ogg data over to oggdat (so that compiling OGG PPSND is possible)
-		oggdat = data;
-		auto dat = data.ptr;
+		this.oggdat = oggFile;
 
 		// Load file from byte array.
 		OggVorbis_File file;
@@ -169,31 +159,49 @@ public class Audio : Content {
 
 		// The amount of PCM data, as told by libvorbisfile.
 		this.PCMLength = cast(ulong)ov_pcm_total(&file, -1);
+	}
 
-		// Read file to buffer
-		byte[4096] buff;
-		int current_section = 0;
-		while (true) {
-			long bytes_read = ov_read(&file, buff.ptr, 4096, 0, 2, 1, &current_section);
-			// End of file, no bytes read.
-			if (bytes_read == 0) break;
-			if (bytes_read == OV_HOLE) throw new Exception("Flow of data interrupted! Corrupt page?");
-			if (bytes_read == OV_EBADLINK) throw new Exception("Stream section or link corrupted!");
-			if (bytes_read == OV_EINVAL) throw new Exception("Initial file headers unreadable or corrupt!");
-			Samples ~= buff[0..bytes_read];
-		}
-		version(BigEndian) {
-			import std.algorithm.mutation;
-			Samples.reverse;
-		}
+	~this() {
+		Dispose();
+	}
 
-		// The length in bytes
-		this.Length = cast(int)Samples.length;
-
+	public void Dispose() {
 		// Clears the ogg file data from memory.
 		if (ov_clear(&file) != 0) {
 			throw new Exception("Failed to do cleanup of vorbis file data!");
 		}
+	}
+
+	public ubyte[] NextFrame(long bufferLength = 4096) {
+		ubyte[] buff;
+		buff.length = bufferLength;
+		long bytes_read = ov_read(&file, buff.ptr, bufferLength, 0, 2, 1, &current_section);
+		// End of file, no bytes read.
+		if (bytes_read == 0) return [];
+		if (bytes_read == OV_HOLE) throw new Exception("Flow of data interrupted! Corrupt page?");
+		if (bytes_read == OV_EBADLINK) throw new Exception("Stream section or link corrupted!");
+		if (bytes_read == OV_EINVAL) throw new Exception("Initial file headers unreadable or corrupt!");
+
+		// Reverse order if big-endian.
+		version(BigEndian) {
+			import std.algorithm.mutation;
+			buff.reverse;
+		}
+		return buff;
+	}
+
+	public ubyte[] ReadAll() {
+		ubyte[] Samples;
+
+		// Read file to buffer
+		ubyte buff = NextFrame();
+		while (buff != []) {
+			Samples ~= buff;
+		}
+
+		// The length in bytes
+		this.Length = cast(int)Samples.length;
+		return Samples;
 	}
 }
 

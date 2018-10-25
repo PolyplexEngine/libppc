@@ -22,17 +22,8 @@ public enum AudioStorageType : ubyte {
 }
 
 public class Audio : Content {
-	private static bool has_vorbis_loaded = false;
-	/**
-		Don't run this.
-		Is automatically run to load OGG Vorbis libraries.
-	*/
-	public static void LoadVorbis() {
-		DerelictOgg.load();
-		DerelictVorbis.load();
-		DerelictVorbisFile.load();
-		has_vorbis_loaded = true;
-	}
+
+	public OGGAudioStream Stream;
 
 	/**
 		What kind of storage is used for the audio content.
@@ -52,13 +43,9 @@ public class Audio : Content {
 	*/
 	public this(ubyte[] data) {
 		super(data);
+		Stream = OGGAudioStream(data);
 		this.Type = cast(AudioStorageType)data[0];
-		if (this.Type == AudioStorageType.OGG) {
-			oggdat = data[1..$];
-			parse_audio_ogg(data[1..$]);
-		} else {
-			parse_audio_ppsnd(data[1..$]);
-		}
+		
 	}
 
 	/**
@@ -66,12 +53,12 @@ public class Audio : Content {
 	*/
 	public override void Convert(ubyte[] data, ubyte type) {
 		this.Type = cast(AudioStorageType)type;
-		parse_audio_ogg(data);
+		Stream = OGGAudioStream(data);
 	}
 
 	public override void Load(ubyte[] data) {
 		this.Type = cast(AudioStorageType)data[0];
-		parse_audio_ogg(data[1..$]);
+		Stream = OGGAudioStream(data[1..$]);
 	}
 
 	/**
@@ -81,7 +68,7 @@ public class Audio : Content {
 		ubyte type = cast(ubyte)this.Type;
 		if (Type == AudioStorageType.OGG) {
 			// USE OGG DATA
-			return [type] ~ cast(ubyte[])oggdat;
+			return [type] ~ cast(ubyte[])Stream.OggData;
 		} else {
 			// USE PCM DATA
 		}
@@ -93,10 +80,29 @@ public class Audio : Content {
 	}
 }
 
-public struct AudioBuffer {
+public struct OGGAudioStream {
+	private static bool has_vorbis_loaded = false;
+	/**
+		Don't run this.
+		Is automatically run to load OGG Vorbis libraries.
+	*/
+	public static void LoadVorbis() {
+		DerelictOgg.load();
+		DerelictVorbis.load();
+		DerelictVorbisFile.load();
+		has_vorbis_loaded = true;
+	}
+
 	private ubyte[] oggdat;
+	private fakefile fake;
 	private OggVorbis_File file;
-	private int currentSection = 0;
+	private vorbis_info* v_info;
+	private ov_callbacks callbacks;
+	private int current_section = 0;
+
+	public ubyte[] OggData() {
+		return oggdat;
+	}
 
 	/**
 		Gets if the audio is to be streamed.
@@ -129,16 +135,11 @@ public struct AudioBuffer {
 
 		this.oggdat = oggFile;
 
-		// Load file from byte array.
-		OggVorbis_File file;
-
-		fakefile fake;
-		fake.arrayptr = dat;
-		fake.readhead = dat;
-		fake.length = data.length;
+		fake.arrayptr = oggdat.ptr;
+		fake.readhead = oggdat.ptr;
+		fake.length = oggdat.length;
 
 		// Callbacks
-		ov_callbacks callbacks;
 		callbacks.read_func = &pp_read;
 		callbacks.seek_func = &pp_seek;
 		callbacks.close_func = &pp_close;
@@ -149,7 +150,7 @@ public struct AudioBuffer {
 		}
 
 		// Get info about stream.	
-		vorbis_info* v_info = ov_info(&file, -1);
+		v_info = ov_info(&file, -1);
 	
 		// Amount of channels in ogg file
 		this.Channels = v_info.channels;
@@ -172,10 +173,10 @@ public struct AudioBuffer {
 		}
 	}
 
-	public ubyte[] NextFrame(long bufferLength = 4096) {
-		ubyte[] buff;
+	public byte[] NextFrame(uint bufferLength = 4096) {
+		byte[] buff;
 		buff.length = bufferLength;
-		long bytes_read = ov_read(&file, buff.ptr, bufferLength, 0, 2, 1, &current_section);
+		long bytes_read = ov_read(&file, buff.ptr, cast(int)bufferLength, 0, 2, 1, &current_section);
 		// End of file, no bytes read.
 		if (bytes_read == 0) return [];
 		if (bytes_read == OV_HOLE) throw new Exception("Flow of data interrupted! Corrupt page?");
@@ -187,16 +188,17 @@ public struct AudioBuffer {
 			import std.algorithm.mutation;
 			buff.reverse;
 		}
-		return buff;
+		return buff[0..bytes_read];
 	}
 
-	public ubyte[] ReadAll() {
-		ubyte[] Samples;
+	public byte[] ReadAll() {
+		byte[] Samples;
 
 		// Read file to buffer
-		ubyte buff = NextFrame();
+		byte[] buff = NextFrame();
 		while (buff != []) {
 			Samples ~= buff;
+			buff = NextFrame();
 		}
 
 		// The length in bytes

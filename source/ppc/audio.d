@@ -173,7 +173,7 @@ public struct OGGAudioStream {
 		}
 	}
 
-	public byte[] NextFrame(uint bufferLength = 4096) {
+	public byte[] ReadFrame(uint bufferLength = 4096) {
 		byte[] buff;
 		buff.length = bufferLength;
 		long bytes_read = ov_read(&file, buff.ptr, cast(int)bufferLength, 0, 2, 1, &current_section);
@@ -195,7 +195,7 @@ public struct OGGAudioStream {
 		byte[] Samples;
 
 		// Read file to buffer
-		byte[] buff = NextFrame();
+		byte[] buff = ReadFrame();
 		while (buff != []) {
 			Samples ~= buff;
 			buff = NextFrame();

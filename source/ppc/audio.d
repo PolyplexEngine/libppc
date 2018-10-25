@@ -198,7 +198,7 @@ public struct OGGAudioStream {
 		byte[] buff = ReadFrame();
 		while (buff != []) {
 			Samples ~= buff;
-			buff = NextFrame();
+			buff = ReadFrame();
 		}
 
 		// The length in bytes

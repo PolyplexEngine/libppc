@@ -341,6 +341,11 @@ public class RawContentFactory : ContentFactory {
 }
 
 public class RawContent : Content {
+
+	public ubyte[] Data() {
+		return data;
+	}
+	
 	public this(string name) {
 		super(TypeId.Raw, name);
 	}

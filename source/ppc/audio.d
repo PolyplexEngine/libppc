@@ -173,6 +173,10 @@ public struct OGGAudioStream {
 		}
 	}
 
+	public void Rewind() {
+		ov_raw_seek(&file, 0);
+	}
+
 	public byte[] ReadFrame(uint bufferLength = 4096) {
 		byte[] buff;
 		buff.length = bufferLength;

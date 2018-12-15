@@ -24,28 +24,94 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.audio.ogg;
-import std.stdio;
-import std.bitmanip;
-import std.functional;
 import derelict.ogg.ogg;
 import derelict.vorbis;
 import ppc.backend.cfile;
 
+enum SAMPLE_DEPTH_8BIT     = 1;
+enum SAMPLE_DEPTH_16BIT    = 2;
+
+enum SAMPLE_SIGNED         = true;
+enum SAMPLE_UNSIGNED       = false;
+
+enum SAMPLE_LITTLE_ENDIAN  = 0;
+enum SAMPLE_BIG_ENDIAN     = 1;
+
 public struct OggInfo {
-private:
-    vorbis_info* v_info;
+public:
+    int oggVersion;
+    int channels;
+    int bitrate;
+    size_t bitrateUpper;
+    size_t bitrateNominal;
+    size_t bitrateLower;
+    size_t bitrateWindow;
+
+    size_t pcmLength;
 
     this(Ogg oggFile) {
+
+        vorbis_info* inf = ov_info(&oggFile.vfile, -1);
+        
+        this.oggVersion     = (*inf)._version;
+        this.channels       = (*inf).channels;
+        this.bitrate        = (*inf).rate;
+        this.bitrateUpper   = cast(size_t)(*inf).bitrate_upper;
+        this.bitrateNominal = cast(size_t)(*inf).bitrate_nominal;
+        this.bitrateLower   = cast(size_t)(*inf).bitrate_lower;
+        this.bitrateWindow  = cast(size_t)(*inf).bitrate_window;
+
+        this.pcmLength      = cast(size_t)ov_pcm_total(&oggFile.vfile, -1);
 
     }
 }
 
 public struct Ogg {
 private:
-    OggVorbis_File file;
+    OggVorbis_File vfile;
+    static ov_callbacks callbacks;
+    int currentSection = 0;
 
 public:
-    this(ubyte* dataPtr) {
-        
+    OggInfo info;
+
+    /// Construct file from memory
+    /// Check loadFile from ppc.backend.cfile if you want to load from a raw file.
+    this(MemFile file) {
+        // Open file from memory
+        if (ov_open_callbacks(&file, &vfile, null, 0, Ogg.callbacks) < 0) {
+            throw new Exception("Audio does not seem to be an ogg bitstream!...");
+        }
+
+        // Load and set file info.
+        info = OggInfo(this);
     }
+
+    ~this() {
+        if (ov_clear(&vfile) != 0) {
+            throw new Exception("Failed to do cleanup of vorbis file data!");
+        }
+    }
+
+    /// Read data from ogg stream.
+    void read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) {
+        // Read samples of size bufferLength to specified ptr
+		version(BigEndian)  ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+        else                ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+    }
+
+    /// Read data of ogg stream in to array of specified type.
+    T[] readArray(T)(uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) if (isNumeric!T) {
+        T[] arr = new T[bufferLength];
+        read(cast(byte*)&arr, bufferLength, bitdepth, signed);
+        return arr;
+    }
+}
+
+// Keep one instance of the callback pointer instead of many.
+shared static this() {
+    Ogg.callbacks.read_func = &MemFile.read;
+    Ogg.callbacks.seek_func = &MemFile.seek;
+    Ogg.callbacks.close_func = &MemFile.close;
+    Ogg.callbacks.tell_func = &MemFile.tell;
 }

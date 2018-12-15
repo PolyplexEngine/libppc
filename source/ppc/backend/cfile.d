@@ -54,6 +54,7 @@ private:
     ubyte[] data;
 
 public:
+    /// The MemFile object that the references the internally stored data of this struct.
     MemFile file;
 
     this(ubyte[] data) {

@@ -24,3 +24,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.audiofile;
+import ppc.backend.loaders.audio.ogg;
+import ppc.backend.loaders.audio.wav;
+import ppc.backend.loaders.audio.pcm;
+import ppc.backend;
+import ppc.backend.cfile;

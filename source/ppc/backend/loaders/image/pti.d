@@ -25,6 +25,6 @@ DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.image.pti;
 /**
-    Polyplex Tagged Image format
-
+    Polyplex Tagged Image Format
+    A lossless image format with tags.
 */

@@ -30,10 +30,25 @@ import core.stdc.stdlib;
 import core.stdc.string;
 import core.stdc.stdio;
 
+/// A memfile wrapper to make sure that the garbage collector 100% doesn't remove it.
+struct RefMemFile {
+private:
+    ubyte[] data;
+    
+public:
+    MemFile file;
+
+    this(ubyte[] data) {
+        this.data = data;
+        file.arrayptr = cast(ubyte*)&this.data;
+        file.readhead = file.arrayptr;
+        file.length = data.length;
+    }
+}
 
 /// A C File struct which reads from memory instead of disk.
 struct MemFile {
-private:
+public:
     /// Pointer to data
     ubyte* arrayptr;
 
@@ -43,7 +58,6 @@ private:
     /// Length of data.
     size_t length;
 
-public:
     /// MemFile implementation of C fseek.
     static extern (C) int seek(void* data, int64_t offset, int whence) nothrow {
         MemFile* mf = cast(MemFile*)data;

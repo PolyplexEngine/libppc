@@ -46,7 +46,6 @@ public:
     size_t bitrateNominal;
     size_t bitrateLower;
     size_t bitrateWindow;
-
     size_t pcmLength;
 
     this(Ogg oggFile) {
@@ -71,6 +70,7 @@ private:
     OggVorbis_File vfile;
     static ov_callbacks callbacks;
     int currentSection = 0;
+    long bytesRead = 0;
 
 public:
     OggInfo info;
@@ -93,14 +93,41 @@ public:
         }
     }
 
-    /// Read data from ogg stream.
-    void read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) {
+    /**
+        Read data of ogg stream in to specified buffer array by pointer.
+        returns amount of bytes read
+    */
+    long read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) {
         // Read samples of size bufferLength to specified ptr
-		version(BigEndian)  ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
-        else                ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+		version(BigEndian)  bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+        else                bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+        if (bytesRead == OV_HOLE) throw new Exception("Flow of data interrupted! Corrupt page?");
+		if (bytesRead == OV_EBADLINK) throw new Exception("Stream section or link corrupted!");
+		if (bytesRead == OV_EINVAL) throw new Exception("Initial file headers unreadable or corrupt!");
+        return bytesRead;
     }
 
-    /// Read data of ogg stream in to array of specified type.
+    /**
+        Reads entire stream in at once
+        Not recommended for streams longer than a few seconds
+    */
+    byte[] readAll() {
+        byte[] bytes = new byte[info.pcmLength];
+        size_t read = 0;
+        size_t totalRead = 0;
+        while (true) {
+            read = this.read(bytes.ptr+totalRead);
+            totalRead += read;
+            if (read == 0) return bytes;
+        }
+    }
+
+    /**
+        Read data of ogg stream in to array of specified type.
+        This in untested and should probably not be used
+        see the read() function instead.
+    */
+    deprecated("It's recommended not to use this function, but rather use the read() function instead.")
     T[] readArray(T)(uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) if (isNumeric!T) {
         T[] arr = new T[bufferLength];
         read(cast(byte*)&arr, bufferLength, bitdepth, signed);

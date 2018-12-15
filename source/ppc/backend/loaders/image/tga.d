@@ -24,3 +24,23 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.image.tga;
+import imageformats;
+
+/**
+    Loads an TGA image from memory.
+*/
+Image loadTGA(MemFile file) {
+    Image oimg;
+    immutable IFImage img = read_tga_from_mem(file.arrayptr[0..file.length]);
+    oimg.format = cast(ColFmt)img.c;
+    oimg.width = img.w;
+    oimg.height = img.h;
+    oimg.pixelData = img.pixels;
+    return oimg;
+}
+
+ubyte[] saveTGA(Image img) {
+    ubyte[] o;
+    write_tga_to_mem(img.width, img.height, o);
+    return o;
+}

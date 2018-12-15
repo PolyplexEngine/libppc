@@ -25,3 +25,95 @@ DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.image.png;
 import imageformats;
+import ppc.backend.cfile;
+import ppc.backend.image;
+
+/// The bit depth of the png file
+enum PNGDepth {
+    Bit16,
+    Bit8
+}
+
+/// The type of color in the PNG file
+enum ColorType : ubyte {
+    Grayscale       = 0,
+    RGB             = 2,
+    Indexed         = 3,
+    GrayscaleAlpha  = 4,
+    RGBA            = 6
+}
+
+/// The compression method used in the PNG file
+enum CompressionMethod : ubyte {
+    InflateDeflate = 0
+}
+
+/// The filtering method used in the PNG file
+enum FilterMethod : ubyte {
+    StandardAdaptive = 0
+}
+
+/// The type of interlacing used in the PNG file
+enum Interlace : ubyte {
+    None = 0,
+    Adam7 = 1
+}
+
+struct PNGHeader {
+public:
+    /// Width of image
+    int width;
+
+    /// Height of image
+    int height;
+
+    /// Bit depth of image
+    byte bitDepth;
+
+    /// Color type of image
+    ColorType type;
+
+    /// Compression method of image
+    CompressionMethod compressionMethod;
+
+    /// Filtering method of image
+    FilterMethod filterMethod;
+
+    /// Interlacing method of image
+    InterlaceMethod interlaceMethod;
+}
+
+/// Read PNG header from memory
+PNGHeader loadPNGHeader(MemFile file) {
+    return cast(PNGHeader)read_png_header_from_mem(file.arrayptr[0..file.length]);
+}
+
+/**
+    Loads a PNG file from memory
+    loadPNG will automatically infer which bitdepth to load as (8 and 16 bit supported)
+*/
+Image loadPNG(MemFile file) {
+    Image oimg;
+    IFImage img;
+    immutable PNGHeader header = loadPNGHeader(file);
+
+    // Load PNG with the right bit depth.
+    if (header.bitDepth >= 16) {
+        img = read_png16_from_mem(file.arrayptr[0..file.length]);
+    } else {
+        img = read_png_from_mem(file.arrayptr[0..file.length]);
+    }
+     
+    oimg.format = cast(ColFmt)img.c;
+    oimg.width = img.w;
+    oimg.height = img.h;
+    oimg.pixelData = img.pixels;
+    return oimg;
+}
+
+/// Returns a writable PNG as a ubyte array
+ubyte[] savePNG(Image img) {
+    ubyte[] o;
+    write_png_to_mem(img.width, img.height, o);
+    return o;
+}

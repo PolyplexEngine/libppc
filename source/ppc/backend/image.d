@@ -30,3 +30,26 @@ import ppc.backend.loaders.image.tga;
 import ppc.backend.loaders.image.pti;
 import ppc.backend;
 import ppc.backend.cfile;
+
+
+enum ColorFormat {
+    Grayscale       = 1,
+    GrayscaleAlpha  = 2,
+    RGB             = 3,
+    RGBA            = 4
+}
+
+public struct Image {
+public:
+    /// Pixel Data.
+    ubyte[] pixelData;
+
+    /// Width
+    size_t width;
+
+    /// Height
+    size_t height;
+
+    /// Color format.
+    ColorFormat format;
+}

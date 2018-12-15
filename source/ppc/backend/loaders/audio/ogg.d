@@ -1,5 +1,4 @@
-Boost Software License - Version 1.0 - August 17th, 2003
-
+/**
 Copyright (c) 2018 Clipsey (clipseypone@gmail.com)
 
 Permission is hereby granted, free of charge, to any person or organization
@@ -23,3 +22,30 @@ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
 FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+*/
+module ppc.backend.ogg;
+import std.stdio;
+import std.bitmanip;
+import std.functional;
+import derelict.ogg.ogg;
+import derelict.vorbis;
+import ppc.backend.cfile;
+
+public struct OggInfo {
+private:
+    vorbis_info* v_info;
+
+    this(Ogg oggFile) {
+
+    }
+}
+
+public struct Ogg {
+private:
+    OggVorbis_File file;
+
+public:
+    this(ubyte* dataPtr) {
+        
+    }
+}

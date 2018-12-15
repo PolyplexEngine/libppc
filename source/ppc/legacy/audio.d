@@ -1,10 +1,11 @@
-module ppc.audio;
-import ppc;
+module ppc.legacy.audio;
+import ppc.legacy;
 import std.stdio;
 import std.bitmanip;
 import std.functional;
 import derelict.ogg.ogg;
 import derelict.vorbis;
+import ppc.backend.cfile;
 
 public class AudioFactory : ContentFactory {
 	public this() {
@@ -94,7 +95,7 @@ public struct OGGAudioStream {
 	}
 
 	private ubyte[] oggdat;
-	private fakefile fake;
+	private MemFile fake;
 	private OggVorbis_File file;
 	private vorbis_info* v_info;
 	private ov_callbacks callbacks;
@@ -140,10 +141,10 @@ public struct OGGAudioStream {
 		fake.length = oggdat.length;
 
 		// Callbacks
-		callbacks.read_func = &pp_read;
-		callbacks.seek_func = &pp_seek;
-		callbacks.close_func = &pp_close;
-		callbacks.tell_func = &pp_tell;
+		callbacks.read_func = &MemFile.read;
+		callbacks.seek_func = &MemFile.seek;
+		callbacks.close_func = &MemFile.close;
+		callbacks.tell_func = &MemFile.tell;
 
 		if (ov_open_callbacks(&fake, &file, null, 0, callbacks) < 0) {
 			throw new Exception("Audio does not seem to be an ogg bitstream!...");
@@ -208,66 +209,5 @@ public struct OGGAudioStream {
 		// The length in bytes
 		this.Length = cast(int)Samples.length;
 		return Samples;
-	}
-}
-
-private extern (C) nothrow {
-	import core.stdc.config;
-	import core.stdc.stdlib;
-	import core.stdc.string;
-
-	struct fakefile {
-		ubyte* arrayptr;
-		ubyte* readhead;
-		size_t length;
-	}
-
-	extern (C) int pp_seek(void* data, ogg_int64_t offset, int whence) {
-		fakefile* ff = cast(fakefile*)data;
-		switch (whence) {
-			case SEEK_CUR:
-				ff.readhead += offset;
-				break;
-			case SEEK_SET:
-				ff.readhead = ff.arrayptr + offset;
-				break;
-			case SEEK_END:
-				ff.readhead = ff.arrayptr + ff.length-offset;
-				break;
-			default:
-				return -1;
-		}
-
-		if (ff.readhead < ff.arrayptr) {
-			ff.readhead = ff.arrayptr;
-			return -1;
-		}
-
-		if (ff.readhead > ff.arrayptr + ff.length) {
-			ff.readhead = ff.arrayptr + ff.length;
-		}
-
-		return 0;
-	}
-
-	extern (C) size_t pp_read(void* data, size_t bytes, size_t to_read, void* source) {
-		fakefile* ff = cast(fakefile*)source;
-		
-		size_t len = bytes*to_read;
-		if (ff.readhead + len > ff.arrayptr+ff.length) {
-			len = ff.arrayptr+ff.length-ff.readhead;
-		}
-		memcpy(data, ff.readhead, len);
-		ff.readhead += len;
-		return len;
-	}
-
-	extern (C) int pp_close(void* data) {
-		return 0;
-	}
-
-	extern (C) c_long pp_tell(void* data) {
-		fakefile* ff = cast(fakefile*)data;
-		return ff.readhead-ff.arrayptr;
 	}
 }

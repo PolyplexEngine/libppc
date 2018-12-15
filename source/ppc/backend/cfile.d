@@ -30,11 +30,29 @@ import core.stdc.stdlib;
 import core.stdc.string;
 import core.stdc.stdio;
 
+/// Loads a raw file as a MemFile usable by the loaders.
+MemFile loadFile(string filePath) {
+    import std.file;
+    auto data = cast(ubyte[])read(filePath);
+    MemFile file;
+    file.arrayptr = cast(ubyte*)&data;
+    file.readhead = file.arrayptr;
+    file.length = data.length;
+    return file;
+}
+
+/// Loads a raw file as a MemFile usable by the loaders.
+RefMemFile loadFileRef(string filePath) {
+    import std.file;
+    auto data = cast(ubyte[])read(filePath);
+    return RefMemFile(data);
+}
+
 /// A memfile wrapper to make sure that the garbage collector 100% doesn't remove it.
 struct RefMemFile {
 private:
     ubyte[] data;
-    
+
 public:
     MemFile file;
 

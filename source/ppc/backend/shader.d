@@ -23,8 +23,9 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module ppc.backend.loaders.shader.psgl;
-/**
-    Polyplex Split GLSL
-    A simple GLSL format combining GLSL shaders in to one file.
-*/
+module ppc.backend.shader;
+import ppc.backend.loaders.shader.glsl;
+import ppc.backend.loaders.shader.ppsl;
+import ppc.backend.loaders.shader.psgl;
+import ppc.backend;
+import ppc.backend.cfile;

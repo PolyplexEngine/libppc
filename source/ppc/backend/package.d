@@ -41,21 +41,3 @@ alias uint16_t = ushort;
 // Alias these fuckers so we're sure that they are the right thing
 alias clong = c_long;
 alias culong = c_ulong;
-
-/// Loads a raw file as a MemFile usable by the loaders.
-MemFile loadFile(string filePath) {
-    import std.file;
-    auto data = read!(ubyte[])(fileDirectory);
-    MemFile file;
-    file.arrayptr = cast(ubyte*)&data;
-    file.readhead = file.arrayptr;
-    file.length = data.length;
-    return file;
-}
-
-/// Loads a raw file as a MemFile usable by the loaders.
-RefMemFile loadFileRef(string filePath) {
-    import std.file;
-    auto data = read!(ubyte[])(fileDirectory);
-    return RefMemFile(data);
-}

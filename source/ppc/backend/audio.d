@@ -63,8 +63,11 @@ public {
         size_t rawLength;
     }
 
-    // An generic audio stream that can be read by OpenAL
-    struct Audio(T) if (is(T : Ogg)) {
+    /// returns true if the type is a valid audio type.
+    enum IsValidAudio(T) = (is(T : Ogg));
+
+    /// A generic audio stream that can be read by OpenAL
+    struct Audio(T) if (IsValidAudio!T) {
     public:
         /// Information about the audio file
         AudioInfo info;
@@ -77,7 +80,7 @@ public {
         /// Creates a new instance of Audio from file in memory
         this(MemFile file) {
             // Detect the right file format to use.
-            if (file.hasSignature(FileSignature.AudioOgg)) {
+            if (file.hasSignature(FileSignature.AudioOGG)) {
                 audioFile = Ogg(file);
                 info = audioFile.genericInfo;
             }
@@ -107,7 +110,7 @@ public {
         }
 
         /**
-            Seek rawly to a byte in the stream
+            Seek to a byte in the stream
         */
         void seek(long position = 0) {
             audioFile.seek(position);

@@ -135,10 +135,16 @@ public:
         // Read samples of size bufferLength to specified ptr
 		version(BigEndian)  bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
         else                bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
-        if (bytesRead == OV_HOLE) throw new Exception("Flow of data interrupted! Corrupt page?");
-		if (bytesRead == OV_EBADLINK) throw new Exception("Stream section or link corrupted!");
-		if (bytesRead == OV_EINVAL) throw new Exception("Initial file headers unreadable or corrupt!");
-        return bytesRead;
+        switch(bytesRead) {
+            case (OV_HOLE):
+                throw new Exception("Flow of data interrupted! Corrupt page?");
+            case (OV_EBADLINK):
+                throw new Exception("Stream section or link corrupted!");
+            case (OV_EINVAL):
+                throw new Exception("Initial file headers unreadable or corrupt!");
+            default:
+                return bytesRead;
+        }
     }
 
     /// Seek to position in file

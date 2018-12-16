@@ -8,7 +8,7 @@
 			"name": "derelict-util",
 			"description": "Cross-platform shared library loader and a number of utility modules used by the Derelict libraries.",
 			"authors": ["Mike Parker", "Polyplex Developers"],
-			"license": "Boost",
+			"license": "BSL-1.0",
 			"targetPath": "lib",
 			"libs-linux": ["dl"],
 			"sourcePaths": [ "modules/pp-derelict-util/source" ],
@@ -50,5 +50,5 @@
 	"targetType": "dynamicLibrary",
 	"description": "Content managment for polyplex",
 	"copyright": "Copyright © 2018, Clipsey",
-	"license": "MIT"
+	"license": "BSL-1.0"
 }

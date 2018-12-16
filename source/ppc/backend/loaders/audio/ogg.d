@@ -27,26 +27,54 @@ module ppc.backend.loaders.audio.ogg;
 import derelict.ogg.ogg;
 import derelict.vorbis;
 import ppc.backend.cfile;
+import ppc.backend.audio;
 
+/// Sample bit depth being 8 bit
 enum SAMPLE_DEPTH_8BIT     = 1;
+
+/// Sample bit depth being 16 bit
 enum SAMPLE_DEPTH_16BIT    = 2;
 
+/// Samples are signed
 enum SAMPLE_SIGNED         = true;
+
+/// Samples are unsigned
 enum SAMPLE_UNSIGNED       = false;
 
+/// Sample should be stored little endian
 enum SAMPLE_LITTLE_ENDIAN  = 0;
+
+/// Sample should be stored big endian
 enum SAMPLE_BIG_ENDIAN     = 1;
 
 public struct OggInfo {
 public:
+    /// Which version of OGG is used.
     int oggVersion;
+
+    /// The amount of channels present
     int channels;
+
+    /// Bitrate of OGG
     int bitrate;
+
+    /// Bitrate upper value
     size_t bitrateUpper;
+
+    /// Bitrate nominal value
     size_t bitrateNominal;
+
+    /// Bitrate lower value
     size_t bitrateLower;
+
+    /// Bitrate window
     size_t bitrateWindow;
+
+    /// Length of OGG in samples
     size_t pcmLength;
+
+    /// Length of OGG in bytes.
+    size_t rawLength;
 
     this(Ogg oggFile) {
 
@@ -61,6 +89,7 @@ public:
         this.bitrateWindow  = cast(size_t)(*inf).bitrate_window;
 
         this.pcmLength      = cast(size_t)ov_pcm_total(&oggFile.vfile, -1);
+        this.rawLength      = cast(size_t)ov_raw_total(&oggFile.vfile, -1);
 
     }
 }
@@ -69,11 +98,16 @@ public struct Ogg {
 private:
     OggVorbis_File vfile;
     static ov_callbacks callbacks;
-    int currentSection = 0;
-    long bytesRead = 0;
+    int currentSection;
+    long bytesRead;
 
 public:
     OggInfo info;
+
+    /// Gets info in the generic AudioInfo format.
+    AudioInfo genericInfo() {
+        return AudioInfo(AudioType.OGG, cast(ubyte)info.oggVersion, cast(ubyte)info.channels, info.bitrate, info.pcmLength, info.rawLength);
+    }
 
     /// Construct file from memory
     /// Check loadFile from ppc.backend.cfile if you want to load from a raw file.

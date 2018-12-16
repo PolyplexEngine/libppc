@@ -31,48 +31,93 @@ import ppc.backend;
 import ppc.backend.signatures;
 import ppc.backend.cfile;
 
+public {
 
-public struct Audio(T) if (is(T : Ogg)) {
-private:
-    T audioFile;
+    /// The type of audio
+    enum AudioType : ubyte {
+        OGG,
+        WAV,
+        PCM
+    }
 
-public:
-    /// Creates a new instance of Audio from file in memory
-    this(MemFile file) {
-        // Detect the right file format to use.
-        if (file.hasSignature(FileSignature.AudioOgg)) {
-            audioFile = Ogg(file);
+    /// Information about the audio
+    /// this struct is tightly packed (no padding)
+    struct AudioInfo {
+    align(1):
+        /// The type of audio format used.
+        AudioType type;
+
+        /// Version of audio format
+        ubyte version_;
+
+        /// The amount of channels
+        ubyte channels;
+
+        /// Bitrate of the audio stream
+        size_t bitrate;
+
+        /// Length of stream in samples
+        size_t length;
+
+        /// Length of stream in bytes
+        size_t rawLength;
+    }
+
+    // An generic audio stream that can be read by OpenAL
+    struct Audio(T) if (is(T : Ogg)) {
+    public:
+        /// Information about the audio file
+        AudioInfo info;
+
+    private:
+        MemFile* mref;
+        T audioFile;
+
+    public:
+        /// Creates a new instance of Audio from file in memory
+        this(MemFile file) {
+            // Detect the right file format to use.
+            if (file.hasSignature(FileSignature.AudioOgg)) {
+                audioFile = Ogg(file);
+                info = audioFile.genericInfo;
+            }
+
+            // Keep a reference to the file in memory so that the GC doesn't collect it by accident.
+            this.mref = &file;
         }
-    }
 
-    /// Loads am audio file in to memory then uses this(MemFile) to initialize it.
-    this(string file) {
-        MemFile f = loadFile(file);
-        this(f);
-    }
+        /// Loads am audio file in to memory then uses this(MemFile) to initialize it.
+        this(string file) {
+            MemFile f = loadFile(file);
+            this(f);
+        }
 
-    ~this() {
-        destroy(audioFile);
-    }
+        ~this() {
+            destroy(audioFile);
 
-    /**
-        Read [bufferLength] bytes from stream to [ptr] 
-    */
-    ulong read(byte* ptr, uint bufferLength = 4096) {
-        return audioFile.read(ptr, bufferLength);
-    }
+            // Collect the MemFile.
+            destroy(*mref);
+        }
 
-    /**
-        Seek rawly to a byte in the stream
-    */
-    void seek(long position = 0) {
-        audioFile.seek(position);
-    }
+        /**
+            Read [bufferLength] bytes from stream to [ptr] 
+        */
+        ulong read(byte* ptr, uint bufferLength = 4096) {
+            return audioFile.read(ptr, bufferLength);
+        }
 
-    /**
-        Seek to a sample in the stream
-    */
-    void seekSample(long position = 0) {
-        audioFile.seekPCM(position);
+        /**
+            Seek rawly to a byte in the stream
+        */
+        void seek(long position = 0) {
+            audioFile.seek(position);
+        }
+
+        /**
+            Seek to a sample in the stream
+        */
+        void seekSample(long position = 0) {
+            audioFile.seekPCM(position);
+        }
     }
 }

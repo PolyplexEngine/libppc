@@ -96,6 +96,8 @@ public:
     }
 }
 
+//  TODO: Replace this with some prettier code
+/// Returns a writable PPC file as a ubyte array
 ubyte[] savePPC(PPC ppc) {
     ubyte[] oArr = new ubyte[FileSignature.ContainerPPC.length+MemFile.sizeof+ppc.dataStr.length];
     memoryCopy(FileSignature.ContainerPPC.ptr, oArr.ptr, FileSignature.ContainerPPC.length);

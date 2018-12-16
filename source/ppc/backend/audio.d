@@ -77,7 +77,7 @@ public {
         T audioFile;
 
     public:
-        /// Creates a new instance of Audio from file in memory
+        /// Creates Audio from memory
         this(MemFile file) {
             // Detect the right file format to use.
             if (file.hasSignature(FileSignature.AudioOGG)) {
@@ -89,7 +89,7 @@ public {
             this.mref = &file;
         }
 
-        /// Loads am audio file in to memory then uses this(MemFile) to initialize it.
+        /// Creates audio from file
         this(string file) {
             MemFile f = loadFile(file);
             this(f);

@@ -31,13 +31,21 @@ import imageformats;
 /**
     Loads an TGA image from memory.
 */
+void loadTGA(MemFile file, ref Image oimg) {
+    IFImage img = read_tga_from_mem(file.arrayptr[0..file.length]);
+    oimg.info.imageType = ImageType.TGA;
+    oimg.info.colorFormat = cast(ColorFormat)img.c;
+    oimg.info.width = img.w;
+    oimg.info.height = img.h;
+    oimg.pixelData = img.pixels;
+}
+
+/**
+    Loads an TGA image from memory.
+*/
 Image loadTGA(MemFile file) {
     Image oimg;
-    IFImage img = read_tga_from_mem(file.arrayptr[0..file.length]);
-    oimg.format = cast(ColorFormat)img.c;
-    oimg.width = img.w;
-    oimg.height = img.h;
-    oimg.pixelData = img.pixels;
+    loadTGA(file, oimg);
     return oimg;
 }
 

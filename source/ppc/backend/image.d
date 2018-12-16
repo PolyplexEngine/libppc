@@ -30,19 +30,34 @@ import ppc.backend.loaders.image.tga;
 import ppc.backend.loaders.image.pti;
 import ppc.backend;
 import ppc.backend.cfile;
+import ppc.backend.signatures;
 
-
-enum ColorFormat {
+/// The color format of the image
+enum ColorFormat : ubyte{
     Grayscale       = 1,
     GrayscaleAlpha  = 2,
     RGB             = 3,
     RGBA            = 4
 }
 
-public struct Image {
-public:
-    /// Pixel Data.
-    ubyte[] pixelData;
+/// The type of the image
+enum ImageType : ubyte {
+    BMP,
+    PNG,
+    PTI,
+    TGA
+}
+
+/// Information about the image
+/// This struct is tightly packed with no padding
+struct ImageInfo {
+align(1):
+
+    /// Image type
+    ImageType imageType;
+
+    /// Color format.
+    ColorFormat colorFormat;
 
     /// Width
     size_t width;
@@ -50,6 +65,40 @@ public:
     /// Height
     size_t height;
 
-    /// Color format.
-    ColorFormat format;
+}
+
+/// A generic image
+public struct Image {
+public:
+    /// Information about the image
+    ImageInfo info;
+
+    /// Pixel Data.
+    ubyte[] pixelData;
+
+    /// Width of image
+    size_t width() {
+        return info.width;
+    }
+
+    /// Hight of image
+    size_t height() {
+        return info.height;
+    }
+
+    /// Creates an image from file
+    this(string file) {
+        MemFile f = loadFile(file);
+        this(f);
+    }
+
+    /// Creates an image from memory
+    this(MemFile file) {
+        if (file.hasSignature(FileSignature.ImagePNG)) {
+            loadPNG(file, this);
+        } else {
+            /// Must be TARGA, has no file signature.
+            loadTGA(file, this);
+        }
+    }
 }

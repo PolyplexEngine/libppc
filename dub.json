@@ -43,7 +43,7 @@
 		}
 	],
 	"dependencies": {
-		"imageformats": "~>6.1.2",
+		"imageformats": "~>7.0.0",
 		"arsd-official:image_files": "~>2.1.3",
 		"ppc:derelict-vorbis": "*"
 	},

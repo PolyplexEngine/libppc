@@ -23,22 +23,41 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module ppc.backend.audio;
-import ppc.backend.loaders.audio.ogg;
-import ppc.backend.loaders.audio.wav;
-import ppc.backend.loaders.audio.pcm;
-import ppc.backend;
+module ppc.backend.signatures;
 import ppc.backend.cfile;
 
+/// Enumeration listing supported file signatures
+enum FileSignature : int[] {
+    ImagePng = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
 
-public struct Audio(T) if (is(T : Ogg)) {
-    T audioFile;
+    /// OGG Vorbis header
+    AudioOgg = [0x46, 0x67, 0x67, 0x54],
 
-    this(MemFile file) {
-        
+    /// Waveform Audio Format header 
+    AudioWav = [0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45],
+
+    /// PCM header
+    AudioPcm = []
+}
+
+/// Check if the MemFile has the desired signature.
+bool memfileHasSig(MemFile file, FileSignature sig) {
+    // The point the readhead is currently at
+    auto p = file.tell(&file);
+    foreach(i; 0 .. sig.length) {
+        // Skip arbitrary bytes (designated with numbers less than 0)
+        if (sig[i] < 0) {
+            file.readhead++;
+            continue;
+        }
+
+        if (cast(ubyte)sig[i] != *(file.readhead)) {
+            // Revert read head back to original position then return false.
+            file.seek(&file, p, SeekStart);
+            return false;
+        }
+        file.readhead++;
     }
-
-    this(string file) {
-
-    }
+    file.seek(&file, p, SeekStart);
+    return true;
 }

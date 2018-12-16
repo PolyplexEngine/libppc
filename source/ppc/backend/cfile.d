@@ -30,6 +30,18 @@ import core.stdc.stdlib;
 import core.stdc.string;
 import core.stdc.stdio;
 
+/// Seek based of the start of the MemFile
+/// Alias of SEEK_SET
+enum SeekStart = SEEK_SET;
+
+/// Seek based of the current position of the readhead of the MemFile
+/// Alias of SEEK_CUR
+enum SeekCurrent = SEEK_CUR;
+
+/// Seek based of the end of the MemFile backwards.
+/// Alias of SEEK_END
+enum SeekEnd = SEEK_END;
+
 /// Loads a raw file as a MemFile usable by the loaders.
 MemFile loadFile(string filePath) {
     import std.file;

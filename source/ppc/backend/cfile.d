@@ -164,3 +164,8 @@ public:
     }
     
 }
+
+/// C-style memory copy.
+void memoryCopy(void* input, void* output, size_t length) {
+    memcpy(input, output, length);
+} 

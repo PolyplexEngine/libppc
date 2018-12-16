@@ -107,6 +107,16 @@ public:
         return bytesRead;
     }
 
+    /// Seek to position in file
+    void seek(long position = 0) {
+        ov_raw_seek(&vfile, position);
+    }
+
+    /// Seek to a PCM position in file
+    void seekSample(long position = 0) {
+        ov_pcm_seek(&vfile, position);
+    }
+
     /**
         Reads entire stream in at once
         Not recommended for streams longer than a few seconds

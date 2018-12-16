@@ -24,6 +24,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.image.tga;
+import ppc.backend.image;
+import ppc.backend.cfile;
 import imageformats;
 
 /**
@@ -31,8 +33,8 @@ import imageformats;
 */
 Image loadTGA(MemFile file) {
     Image oimg;
-    immutable IFImage img = read_tga_from_mem(file.arrayptr[0..file.length]);
-    oimg.format = cast(ColFmt)img.c;
+    IFImage img = read_tga_from_mem(file.arrayptr[0..file.length]);
+    oimg.format = cast(ColorFormat)img.c;
     oimg.width = img.w;
     oimg.height = img.h;
     oimg.pixelData = img.pixels;

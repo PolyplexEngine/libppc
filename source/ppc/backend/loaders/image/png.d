@@ -80,7 +80,7 @@ public:
     FilterMethod filterMethod;
 
     /// Interlacing method of image
-    InterlaceMethod interlaceMethod;
+    Interlace interlaceMethod;
 }
 
 /// Read PNG header from memory
@@ -94,20 +94,24 @@ PNGHeader loadPNGHeader(MemFile file) {
 */
 Image loadPNG(MemFile file) {
     Image oimg;
-    IFImage img;
     immutable PNGHeader header = loadPNGHeader(file);
 
     // Load PNG with the right bit depth.
     if (header.bitDepth >= 16) {
-        img = read_png16_from_mem(file.arrayptr[0..file.length]);
+        IFImage16 img = read_png16_from_mem(file.arrayptr[0..file.length]);
+        
+        oimg.format = cast(ColorFormat)img.c;
+        oimg.width = img.w;
+        oimg.height = img.h;
+        oimg.pixelData = cast(ubyte[])img.pixels;
     } else {
-        img = read_png_from_mem(file.arrayptr[0..file.length]);
+        IFImage img = read_png_from_mem(file.arrayptr[0..file.length]);
+        
+        oimg.format = cast(ColorFormat)img.c;
+        oimg.width = img.w;
+        oimg.height = img.h;
+        oimg.pixelData = img.pixels;
     }
-     
-    oimg.format = cast(ColFmt)img.c;
-    oimg.width = img.w;
-    oimg.height = img.h;
-    oimg.pixelData = img.pixels;
     return oimg;
 }
 

@@ -41,10 +41,12 @@ enum FileSignature : int[] {
 }
 
 /// Check if the MemFile has the desired signature.
-bool memfileHasSig(MemFile file, FileSignature sig) {
+bool hasSignature(MemFile file, FileSignature sig) {
+
     // The point the readhead is currently at
     auto p = file.tell(&file);
     foreach(i; 0 .. sig.length) {
+
         // Skip arbitrary bytes (designated with numbers less than 0)
         if (sig[i] < 0) {
             file.readhead++;
@@ -52,12 +54,18 @@ bool memfileHasSig(MemFile file, FileSignature sig) {
         }
 
         if (cast(ubyte)sig[i] != *(file.readhead)) {
+
             // Revert read head back to original position then return false.
             file.seek(&file, p, SeekStart);
             return false;
+
         }
         file.readhead++;
+
     }
+
+    // Revert read head back to original position then return true.
     file.seek(&file, p, SeekStart);
     return true;
+
 }

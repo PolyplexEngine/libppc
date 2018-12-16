@@ -28,17 +28,51 @@ import ppc.backend.loaders.audio.ogg;
 import ppc.backend.loaders.audio.wav;
 import ppc.backend.loaders.audio.pcm;
 import ppc.backend;
+import ppc.backend.signatures;
 import ppc.backend.cfile;
 
 
 public struct Audio(T) if (is(T : Ogg)) {
+private:
     T audioFile;
 
+public:
+    /// Creates a new instance of Audio from file in memory
     this(MemFile file) {
-        
+        // Detect the right file format to use.
+        if (file.hasSignature(FileSignature.AudioOgg)) {
+            audioFile = Ogg(file);
+        }
     }
 
+    /// Loads am audio file in to memory then uses this(MemFile) to initialize it.
     this(string file) {
+        MemFile f = loadFile(file);
+        this(f);
+    }
 
+    ~this() {
+        destroy(audioFile);
+    }
+
+    /**
+        Read [bufferLength] bytes from stream to [ptr] 
+    */
+    ulong read(byte* ptr, uint bufferLength = 4096) {
+        return audioFile.read(ptr, bufferLength);
+    }
+
+    /**
+        Seek rawly to a byte in the stream
+    */
+    void seek(long position = 0) {
+        audioFile.seek(position);
+    }
+
+    /**
+        Seek to a sample in the stream
+    */
+    void seekSample(long position = 0) {
+        audioFile.seekPCM(position);
     }
 }

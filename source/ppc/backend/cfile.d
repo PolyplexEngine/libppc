@@ -44,7 +44,7 @@ enum SeekEnd = SEEK_END;
 
 /// Loads a raw file as a MemFile usable by the loaders.
 MemFile loadFile(string filePath) {
-    import std.file;
+    import std.file : read;
     auto data = cast(ubyte[])read(filePath);
     MemFile file;
     file.arrayptr = cast(ubyte*)&data;
@@ -55,7 +55,7 @@ MemFile loadFile(string filePath) {
 
 /// Loads a raw file as a MemFile usable by the loaders.
 RefMemFile loadFileRef(string filePath) {
-    import std.file;
+    import std.file : read;
     auto data = cast(ubyte[])read(filePath);
     return RefMemFile(data);
 }
@@ -69,6 +69,7 @@ public:
     /// The MemFile object that the references the internally stored data of this struct.
     MemFile file;
 
+    /// Creates a new RefMemFile
     this(ubyte[] data) {
         this.data = data;
         file.arrayptr = cast(ubyte*)&this.data;

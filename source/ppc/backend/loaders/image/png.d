@@ -24,9 +24,9 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.image.png;
-import imageformats;
 import ppc.backend.cfile;
-import ppc.backend.image;
+import ppc.types.image;
+import imageformats;
 
 /// The bit depth of the png file
 enum PNGDepth {
@@ -59,6 +59,7 @@ enum Interlace : ubyte {
     Adam7 = 1
 }
 
+/// PNG Header
 struct PNGHeader {
 public:
     /// Width of image

@@ -23,9 +23,9 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module ppc.backend.font;
-import ppc.backend.loaders.font.ttf;
-import ppc.backend.loaders.font.otf;
-import ppc.backend.loaders.font.pfd;
+module ppc.types.shader;
+import ppc.backend.loaders.shader.glsl;
+import ppc.backend.loaders.shader.ppsl;
+import ppc.backend.loaders.shader.psgl;
 import ppc.backend;
 import ppc.backend.cfile;

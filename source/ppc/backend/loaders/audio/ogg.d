@@ -27,7 +27,7 @@ module ppc.backend.loaders.audio.ogg;
 import derelict.ogg.ogg;
 import derelict.vorbis;
 import ppc.backend.cfile;
-import ppc.backend.audio;
+import ppc.types.audio;
 
 /// Sample bit depth being 8 bit
 enum SAMPLE_DEPTH_8BIT     = 1;
@@ -47,6 +47,7 @@ enum SAMPLE_LITTLE_ENDIAN  = 0;
 /// Sample should be stored big endian
 enum SAMPLE_BIG_ENDIAN     = 1;
 
+/// Info associated with the OGG file
 public struct OggInfo {
 public:
     /// Which version of OGG is used.
@@ -76,6 +77,7 @@ public:
     /// Length of OGG in bytes.
     size_t rawLength;
 
+    /// Creates a new OggInfo
     this(Ogg oggFile) {
 
         vorbis_info* inf = ov_info(&oggFile.vfile, -1);
@@ -94,6 +96,7 @@ public:
     }
 }
 
+/// An OGG audio file
 public struct Ogg {
 private:
     OggVorbis_File vfile;
@@ -102,6 +105,7 @@ private:
     long bytesRead;
 
 public:
+    /// information related to the OGG file
     OggInfo info;
 
     /// Gets info in the generic AudioInfo format.
@@ -162,9 +166,9 @@ public:
         Not recommended for streams longer than a few seconds
     */
     byte[] readAll() {
-        byte[] bytes = new byte[info.pcmLength];
-        size_t read = 0;
-        size_t totalRead = 0;
+        byte[] bytes = new byte[info.rawLength];
+        size_t read;
+        size_t totalRead;
         while (true) {
             read = this.read(bytes.ptr+totalRead);
             totalRead += read;
@@ -184,6 +188,14 @@ public:
         return arr;
     }
 }
+
+// TODO: Replace this with bindbc!
+///Load libogg and libvorbis
+void loadOggFormat() {
+    DerelictOgg.load();
+    DerelictVorbis.load();
+}
+
 
 // Keep one instance of the callback pointer instead of many.
 shared static this() {

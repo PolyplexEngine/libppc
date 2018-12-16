@@ -24,8 +24,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.image.tga;
-import ppc.backend.image;
 import ppc.backend.cfile;
+import ppc.types.image;
 import imageformats;
 
 /**
@@ -49,6 +49,7 @@ Image loadTGA(MemFile file) {
     return oimg;
 }
 
+/// Returns a writable TGA as a ubyte array
 ubyte[] saveTGA(Image img) {
     ubyte[] o;
     write_tga_to_mem(img.width, img.height, o);

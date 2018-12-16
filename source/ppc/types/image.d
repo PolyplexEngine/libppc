@@ -23,7 +23,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module ppc.backend.image;
+module ppc.types.image;
 import ppc.backend.loaders.image.bmp;
 import ppc.backend.loaders.image.png;
 import ppc.backend.loaders.image.tga;

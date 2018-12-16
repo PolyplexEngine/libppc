@@ -23,19 +23,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module ppc.backend;
-import core.stdc.config;
-public import ppc.backend.cfile;
-public import ppc.backend.signatures;
-
-// Aliases to make it easier for C developers to make distinctions in the C bindings.
-alias int64_t = long;
-alias uint64_t = ulong;
-alias int32_t = int;
-alias uint32_t = uint;
-alias int16_t = short;
-alias uint16_t = ushort;
-
-// Alias these fuckers so we're sure that they are the right thing
-alias clong = c_long;
-alias culong = c_ulong;
+module ppc.backend.ppc;
+import ppc.backend;
+import ppc.backend.cfile;
+import ppc.backend.signatures;

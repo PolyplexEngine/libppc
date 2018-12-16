@@ -23,7 +23,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module ppc.backend.audio;
+module ppc.types.audio;
 import ppc.backend.loaders.audio.ogg;
 import ppc.backend.loaders.audio.wav;
 import ppc.backend.loaders.audio.pcm;

@@ -57,8 +57,14 @@ void loadPSGL(MemFile file, Shader* shader) {
 
 /// 
 ubyte[] savePSGL(Shader shader) {
-    ubyte[] oArr = new ubyte[shader.sizeof];
+    ubyte[] oArr;
     MemFile mf = MemFile(oArr.ptr, oArr.length);
-    mf.write(&shader, shader.sizeof, 1, &mf);
-    return oArr;
+    mf.write(FileSignature.ShaderPSGL.ptr, ubyte.sizeof, FileSignature.ShaderPSGL.length, &mf);
+    foreach(typ, shd; shader.shaders) {
+        size_t len = shd.code.length;
+        mf.write(&typ, ShaderType.sizeof, 1, &mf);
+        mf.write(&len, uint.sizeof, 1, &mf);
+        mf.write(shd.code.ptr, ubyte.sizeof, len, &mf);
+    }
+    return mf.toArray();
 }

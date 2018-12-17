@@ -26,26 +26,9 @@ DEALINGS IN THE SOFTWARE.
 module ppc.backend.loaders.audio.ogg;
 import derelict.ogg.ogg;
 import derelict.vorbis;
+import ppc.backend.loaders.audio;
 import ppc.backend.cfile;
 import ppc.types.audio;
-
-/// Sample bit depth being 8 bit
-enum SAMPLE_DEPTH_8BIT     = 1;
-
-/// Sample bit depth being 16 bit
-enum SAMPLE_DEPTH_16BIT    = 2;
-
-/// Samples are signed
-enum SAMPLE_SIGNED         = true;
-
-/// Samples are unsigned
-enum SAMPLE_UNSIGNED       = false;
-
-/// Sample should be stored little endian
-enum SAMPLE_LITTLE_ENDIAN  = 0;
-
-/// Sample should be stored big endian
-enum SAMPLE_BIG_ENDIAN     = 1;
 
 /// Info associated with the OGG file
 public struct OggInfo {
@@ -97,7 +80,7 @@ public:
 }
 
 /// An OGG audio file
-public struct Ogg {
+public class Ogg : AudioStream {
 private:
     OggVorbis_File vfile;
     static ov_callbacks callbacks;
@@ -109,7 +92,7 @@ public:
     OggInfo info;
 
     /// Gets info in the generic AudioInfo format.
-    AudioInfo genericInfo() {
+    override AudioInfo genericInfo() {
         return AudioInfo(AudioType.OGG, cast(ubyte)info.oggVersion, cast(ubyte)info.channels, info.bitrate, info.pcmLength, info.rawLength);
     }
 
@@ -135,7 +118,7 @@ public:
         Read data of ogg stream in to specified buffer array by pointer.
         returns amount of bytes read
     */
-    long read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) {
+    override long read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) {
         // Read samples of size bufferLength to specified ptr
 		version(BigEndian)  bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
         else                bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
@@ -152,12 +135,12 @@ public:
     }
 
     /// Seek to position in file
-    void seek(long position = 0) {
+    override void seek(long position = 0) {
         ov_raw_seek(&vfile, position);
     }
 
     /// Seek to a PCM position in file
-    void seekSample(long position = 0) {
+    override void seekSample(long position = 0) {
         ov_pcm_seek(&vfile, position);
     }
 
@@ -165,7 +148,7 @@ public:
         Reads entire stream in at once
         Not recommended for streams longer than a few seconds
     */
-    byte[] readAll() {
+    override byte[] readAll() {
         byte[] bytes = new byte[info.rawLength];
         size_t read;
         size_t totalRead;
@@ -182,7 +165,7 @@ public:
         see the read() function instead.
     */
     deprecated("It's recommended not to use this function, but rather use the read() function instead.")
-    T[] readArray(T)(uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) if (isNumeric!T) {
+    override T[] readArray(T)(uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) if (isNumeric!T) {
         T[] arr = new T[bufferLength];
         read(cast(byte*)&arr, bufferLength, bitdepth, signed);
         return arr;

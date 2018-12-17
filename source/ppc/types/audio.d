@@ -27,6 +27,7 @@ module ppc.types.audio;
 import ppc.backend.loaders.audio.ogg;
 import ppc.backend.loaders.audio.wav;
 import ppc.backend.loaders.audio.pcm;
+import ppc.backend.loaders.audio;
 import ppc.backend;
 import ppc.backend.signatures;
 import ppc.backend.cfile;
@@ -67,21 +68,21 @@ public {
     enum IsValidAudio(T) = (is(T : Ogg));
 
     /// A generic audio stream that can be read by OpenAL
-    struct Audio(T) if (IsValidAudio!T) {
+    struct Audio {
     public:
         /// Information about the audio file
         AudioInfo info;
 
     private:
         MemFile* mref;
-        T audioFile;
+        AudioStream audioFile;
 
     public:
         /// Creates Audio from memory
         this(MemFile file) {
             // Detect the right file format to use.
             if (file.hasSignature(FileSignature.AudioOGG)) {
-                audioFile = Ogg(file);
+                audioFile = new Ogg(file);
                 info = audioFile.genericInfo;
             }
 
@@ -120,7 +121,7 @@ public {
             Seek to a sample in the stream
         */
         void seekSample(long position = 0) {
-            audioFile.seekPCM(position);
+            audioFile.seekSample(position);
         }
     }
 }

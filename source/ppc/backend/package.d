@@ -62,3 +62,16 @@ Types compileToPPC(string file, string outFile, PPCCreateInfo createInfo) {
     write(outFile, savePPC(ppc));
     return t;
 }
+
+Types compileToPPC(ubyte[] data, Types t, string outFile, PPCCreateInfo createInfo) {
+    PPC ppc;
+    ppc.contentType = t;
+    ppc.author = createInfo.author;
+    ppc.license = createInfo.license;
+    ppc.options = 0;
+    ppc.version_ = 1;
+    ppc.setData(data);
+
+    write(outFile, savePPC(ppc));
+    return t;
+}

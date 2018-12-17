@@ -76,9 +76,30 @@ public Types fileExtToType(string filename) {
         case ".bmp":
             return Types.Image;
 
+        // Vertex shaders
         case ".vsh":
+        case ".vert":
+        
+        // Fragment shaders
         case ".fsh":
+        case ".frag":
+
+        // Geometry shaders
         case ".gsh":
+        case ".geom":
+
+        // Tesselation shaders
+        case ".tsh":
+        case ".tesc":
+        case ".tese":
+
+        // Compute shaders
+        case ".csh":
+        case ".comp":
+
+        // SPIR-V compiled shaders
+        case ".spv":
+        case ".sprv":
             return Types.Shader;
 
         case ".fbx":
@@ -95,5 +116,6 @@ public Types getTypeOf(string filename) {
     import std.conv;
     MemFile mf = loadFile(filename);
     Types ts = fileSigToType(mf);
+    scope(exit) destroy(mf);
     return (ts == Types.Undecisive) ? fileExtToType(filename) : ts;
 }

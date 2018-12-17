@@ -34,6 +34,8 @@ public enum ShaderType {
     Fragment,
     Vertex,
     Geometry,
+    Tesselation,
+    Compute,
 }
 
 /// A GLSL shader
@@ -52,4 +54,32 @@ public:
     /// List of shaders for this bundle
     GLSLShader[ShaderType] shaders;
 
+}
+
+import std.path;
+/// Tests the file extension of input file to determine shader type.
+ShaderType toShaderType(string input) {
+    switch(input.extension) {
+        case ".vsh":
+        case ".vert":
+            return ShaderType.Vertex;
+        case ".fsh":
+        case ".frag":
+            return ShaderType.Fragment;
+        case ".geom":
+        case ".gsh":
+            return ShaderType.Geometry;
+        case ".tsh":
+        case ".tesc":
+        case ".tese":
+            return ShaderType.Tesselation;
+        case ".csh":
+        case ".comp":
+            return ShaderType.Compute;
+        case ".spv":
+        case ".sprv":
+            return ShaderType.Compiled;
+        default:
+            throw new Exception("Invalid shader type!");
+    }
 }

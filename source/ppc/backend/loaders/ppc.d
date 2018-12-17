@@ -67,6 +67,7 @@ public:
 
     /// Create a new PPC file from memory
     this(MemFile file) {
+        import std.stdio;
         // Throw exception if not PPC file
         if (!file.hasSignature(FileSignature.ContainerPPC)) 
             throw new InvalidMagicBytesException("ppc");
@@ -80,7 +81,9 @@ public:
         file.read(&contentType, ubyte.sizeof, 1, &file);
         file.read(&author, char.sizeof, 32, &file);
         file.read(&license, char.sizeof, 16, &file);
-        file.read(&dataStr, ubyte.sizeof, file.length - file.tell(&file), &file);
+        dataStr = new ubyte[file.length - file.tell(&file)];
+        file.read(dataStr.ptr, ubyte.sizeof, file.length - file.tell(&file), &file);
+
 
         // Set up pointer to internal data
         data.arrayptr = dataStr.ptr;

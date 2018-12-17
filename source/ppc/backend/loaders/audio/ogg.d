@@ -65,9 +65,9 @@ public:
 
         vorbis_info* inf = ov_info(&oggFile.vfile, -1);
         
-        this.oggVersion     = (*inf)._version;
-        this.channels       = (*inf).channels;
-        this.bitrate        = (*inf).rate;
+        this.oggVersion     = inf._version;
+        this.channels       = inf.channels;
+        this.bitrate        = inf.rate;
         this.bitrateUpper   = cast(size_t)(*inf).bitrate_upper;
         this.bitrateNominal = cast(size_t)(*inf).bitrate_nominal;
         this.bitrateLower   = cast(size_t)(*inf).bitrate_lower;
@@ -75,7 +75,6 @@ public:
 
         this.pcmLength      = cast(size_t)ov_pcm_total(&oggFile.vfile, -1);
         this.rawLength      = cast(size_t)ov_raw_total(&oggFile.vfile, -1);
-
     }
 }
 
@@ -176,12 +175,13 @@ public:
 ///Load libogg and libvorbis
 void loadOggFormat() {
     DerelictOgg.load();
-    DerelictVorbis.load();
+    DerelictVorbisFile.load();
 }
 
 
 // Keep one instance of the callback pointer instead of many.
 shared static this() {
+    loadOggFormat();
     Ogg.callbacks.read_func = &MemFile.read;
     Ogg.callbacks.seek_func = &MemFile.seek;
     Ogg.callbacks.close_func = &MemFile.close;

@@ -54,6 +54,11 @@ public:
     /// List of shaders for this bundle
     GLSLShader[ShaderType] shaders;
 
+    this(MemFile mf) {
+        if (mf.hasSignature(FileSignature.ShaderPSGL)) {
+            loadPSGL(mf, &this);
+        }
+    }
 }
 
 import std.path;

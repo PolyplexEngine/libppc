@@ -45,7 +45,7 @@ enum FileSignature : int[] {
     ImagePTI = [0x50, 0x54, 0x49, 0x5F, 0x48, 0xFA, 0x49, 0x4C],
 
     /// OGG Vorbis header
-    AudioOGG = [0x46, 0x67, 0x67, 0x54],
+    AudioOGG = [0x4F, 0x67, 0x67, 0x53],
 
     /// WAV header 
     AudioWAV = [0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45],
@@ -69,9 +69,11 @@ enum WritableFileSigs : ubyte[] {
 
 /// Check if the MemFile has the desired signature.
 bool hasSignature(MemFile file, FileSignature sig) {
-
     // The point the readhead is currently at
     auto p = file.tell(&file);
+    file.seek(&file, 0, SeekStart);
+    ubyte[] hd = new ubyte[sig.length];
+    file.read(hd.ptr, ubyte.sizeof, sig.length, &file);
     foreach(i; 0 .. sig.length) {
 
         // Skip arbitrary bytes (designated with numbers less than 0)
@@ -80,15 +82,13 @@ bool hasSignature(MemFile file, FileSignature sig) {
             continue;
         }
 
-        if (cast(ubyte)sig[i] != *(file.readhead)) {
+        if (cast(ubyte)sig[i] != hd[i]) {
 
             // Revert read head back to original position then return false.
             file.seek(&file, p, SeekStart);
             return false;
 
         }
-        file.readhead++;
-
     }
 
     // Revert read head back to original position then return true.

@@ -48,7 +48,7 @@ MemFile loadFile(string filePath) {
     import std.file : read;
     auto data = cast(ubyte[])read(filePath);
     MemFile file;
-    file.arrayptr = cast(ubyte*)&data;
+    file.arrayptr = data.ptr;
     file.readhead = file.arrayptr;
     file.length = data.length;
     return file;

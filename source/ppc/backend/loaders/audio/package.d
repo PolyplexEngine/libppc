@@ -22,6 +22,7 @@ enum SAMPLE_BIG_ENDIAN     = 1;
 
 /// We need to use this cus templates are anoying
 public class AudioStream {
+public:
     abstract AudioInfo genericInfo();
 
     abstract long read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED);

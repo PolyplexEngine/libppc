@@ -106,8 +106,12 @@ public {
         /**
             Read [bufferLength] bytes from stream to [ptr] 
         */
-        ulong read(byte* ptr, uint bufferLength = 4096) {
-            return audioFile.read(ptr, bufferLength);
+        ulong read(byte* ptr, size_t bufferLength = 4096) {
+            return audioFile.read(ptr, cast(uint)bufferLength);
+        }
+
+        byte[] readAll() {
+            return audioFile.readAll();
         }
 
         /**

@@ -50,7 +50,6 @@ public enum Types {
 
 public Types fileSigToType(MemFile mf) {
     if (mf.hasSignature(FileSignature.AudioOGG) || 
-        mf.hasSignature(FileSignature.AudioPCM) || 
         mf.hasSignature(FileSignature.AudioWAV))
             return Types.Audio;
     if (mf.hasSignature(FileSignature.ImageBMP) || 
@@ -92,6 +91,8 @@ public Types fileExtToType(string filename) {
 }
 
 public Types getTypeOf(string filename) {
+    import std.stdio;
+    import std.conv;
     MemFile mf = loadFile(filename);
     Types ts = fileSigToType(mf);
     return (ts == Types.Undecisive) ? fileExtToType(filename) : ts;

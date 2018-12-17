@@ -35,7 +35,7 @@ import ppc.backend.cfile;
 import ppc.backend.signatures;
 
 /// The types available to ppc
-public enum Types {
+public enum Types : ubyte {
     Audio,
     Font,
     Image,

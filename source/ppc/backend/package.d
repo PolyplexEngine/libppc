@@ -24,9 +24,13 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend;
+import ppc.backend.loaders.ppc;
+import ppc.types;
+import std.file;
 import core.stdc.config;
 public import ppc.backend.cfile;
 public import ppc.backend.signatures;
+
 
 // Aliases to make it easier for C developers to make distinctions in the C bindings.
 alias int64_t = long;
@@ -39,3 +43,22 @@ alias uint16_t = ushort;
 // Alias these fuckers so we're sure that they are the right thing
 alias clong = c_long;
 alias culong = c_ulong;
+
+struct PPCCreateInfo {
+    char[32] author;
+    char[16] license;
+}
+
+Types compileToPPC(string file, string outFile, PPCCreateInfo createInfo) {
+    Types t = file.getTypeOf;
+    PPC ppc;
+    ppc.contentType = t;
+    ppc.author = createInfo.author;
+    ppc.license = createInfo.license;
+    ppc.options = 0;
+    ppc.version_ = 1;
+    ppc.setData(cast(ubyte[])read(file));
+
+    write(outFile, savePPC(ppc));
+    return t;
+}

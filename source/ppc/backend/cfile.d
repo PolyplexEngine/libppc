@@ -142,24 +142,33 @@ public:
     // TODO: Improve the implementation of this.
     /// MemFile implementation of C fwrite
     /// Returns 0 if index is out of range
-    static extern (C) size_t write(void* data, size_t bytes, size_t to_write, void* fileStream) nothrow {
+    static extern (C) size_t write(void* data, size_t bytes, size_t to_write, void* fileStream) {
         MemFile* mf = cast(MemFile*)fileStream;
 
+        // Create buffer if doesn't exist.
+        if (mf.arrayptr is null) {
+            mf.arrayptr = (new ubyte[1]).ptr;
+            mf.readhead = mf.arrayptr;
+        }
+
+        ubyte[] newArr;
         size_t len = bytes*to_write;
         if (mf.readhead + len > mf.arrayptr+mf.length) {
+            
+            // Offset from last iteration
+            size_t offset = (cast(size_t)mf.readhead-cast(size_t)mf.arrayptr);
 
             // Allocation
-            ubyte[] newArr = new ubyte[mf.length+len];
-            immutable size_t sk = tell(&mf);
+            newArr = new ubyte[mf.length+(len)];
             
             // Resize/copy operation
             memoryCopy(mf.arrayptr, newArr.ptr, mf.length);
             mf.arrayptr = newArr.ptr;
-            mf.readhead = mf.arrayptr+sk;
-            mf.length = mf.length+len;
+            mf.readhead = mf.arrayptr+offset;
+            mf.length = newArr.length;
 
         }
-        memcpy(mf.readhead, data, len);
+        memoryCopy(data, mf.readhead, len);
         mf.readhead += len;
         return len;
     }
@@ -168,8 +177,6 @@ public:
     static extern (C) int close(void* fileStream) nothrow {
         return 0;
     }
-
-    
 
     /// MemFile implementation of C ftell.
     static extern (C) clong tell(void* fileStream) nothrow {
@@ -203,5 +210,5 @@ public:
 
 /// C-style memory copy.
 void memoryCopy(void* input, void* output, size_t length) nothrow {
-    memcpy(input, output, length);
+    memcpy(output, input, length);
 } 

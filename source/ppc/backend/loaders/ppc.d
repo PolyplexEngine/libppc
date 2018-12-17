@@ -23,22 +23,14 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
-module ppc.backend.ppc;
+module ppc.backend.loaders.ppc;
 import ppc.backend;
 import ppc.backend.cfile;
 import ppc.backend.signatures;
 import ppc.exceptions;
+import ppc.types;
 
-enum PPCLoaderVersion = 1;
-
-public enum ContentType : ubyte {
-    Script              = 1,
-    Shader              = 2,
-    Image               = 3,
-    Model               = 4,
-    Audio               = 5,
-    GenericData         = 6
-}
+const uint PPCLoaderVersion = 1;
 
 public struct PPC {
 private:
@@ -49,7 +41,7 @@ public:
     uint            version_;
 
     /// Content type of the internal content
-    ContentType     contentType;
+    Types     contentType;
 
     /// Options for the file
     ulong           options;
@@ -62,6 +54,10 @@ public:
 
     /// The content data
     MemFile data;
+
+    void setData(ubyte[] data) {
+        this.dataStr = data;
+    }
 
     /// Create a new PPC file from file
     this(string file) {
@@ -99,15 +95,14 @@ public:
 //  TODO: Replace this with some prettier code
 /// Returns a writable PPC file as a ubyte array
 ubyte[] savePPC(PPC ppc) {
-    ubyte[] oArr;
-    MemFile mf = MemFile(oArr.ptr, oArr.length);
+    MemFile mf;
     // Write file signature.
-    mf.write(FileSignature.ContainerPPC.ptr, FileSignature.ContainerPPC.length, 1, &mf);
+    mf.write(WritableFileSigs.ContainerPPC.ptr, WritableFileSigs.ContainerPPC.length, 1, &mf);
     mf.write(&ppc.version_, uint.sizeof, 1, &mf);
     mf.write(&ppc.options, ulong.sizeof, 1, &mf);
     mf.write(&ppc.contentType, ubyte.sizeof, 1, &mf);
     mf.write(&ppc.author, char.sizeof, 32, &mf);
     mf.write(&ppc.license, char.sizeof, 16, &mf);
-    mf.write(&ppc.dataStr, ubyte.sizeof, mf.length - mf.tell(&mf), &mf);
+    mf.write(ppc.dataStr.ptr, ubyte.sizeof, ppc.dataStr.length, &mf);
     return mf.toArray;
 }

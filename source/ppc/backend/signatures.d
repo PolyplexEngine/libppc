@@ -54,6 +54,19 @@ enum FileSignature : int[] {
     AudioPCM = []
 }
 
+/// Enumeration listing supported file signatures
+enum WritableFileSigs : ubyte[] {
+    /// PPC container format
+    ContainerPPC = [0x50, 0x50, 0x43, 0x48, 0x65, 0x61, 0x64, 0x58],
+    
+    /// PSGL shader header
+    ShaderPSGL = [0x50, 0x53, 0x47, 0x4C, 0x5F, 0x42, 0x65, 0x67, 0x69, 0x6E],
+    
+    /// PTI image header
+    ImagePTI = [0x50, 0x54, 0x49, 0x5F, 0x48, 0xFA, 0x49, 0x4C]
+  
+}
+
 /// Check if the MemFile has the desired signature.
 bool hasSignature(MemFile file, FileSignature sig) {
 

@@ -30,3 +30,59 @@ public import ppc.types.image;
 public import ppc.types.model;
 public import ppc.types.script;
 public import ppc.types.shader;
+
+import ppc.backend.cfile;
+import ppc.backend.signatures;
+
+/// The types available to ppc
+public enum Types {
+    Audio,
+    Font,
+    Image,
+    Model,
+    Script,
+    Shader,
+    Raw,
+
+
+    Undecisive = 255
+}
+
+public Types fileSigToType(MemFile mf) {
+    if (mf.hasSignature(FileSignature.AudioOGG) || 
+        mf.hasSignature(FileSignature.AudioPCM || 
+        mf.hasSignature(FileSignature.AudioWAV))) 
+            return Types.Audio;
+    if (mf.hasSignature(FileSignature.ImageBMP) || 
+        mf.hasSignature(FileSignature.ImagePNG) ||
+        mf.hasSignature(FileSignature.ImagePTI))
+            return Types.Image;
+    if (mf.hasSignature(FileSignature.ShaderPSGL))
+            return Types.Shader;
+    return Types.Undecisive;
+}
+
+public Types fileExtToType(string filename) {
+    import std.path : extension;
+    if (filename.extension(".wav") || 
+        filename.extension(".ogg") || 
+        filename.extension(".pcm"))
+            return Types.Audio;
+    if (filename.extension(".png") ||
+        filename.extension(".tga") ||
+        filename.extension(".pti") ||
+        filename.extension(".bmp"))
+            return Types.Image;
+    if (filename.extension(".vsh") ||
+        filename.extension(".fsh") ||
+        filename.extension(".gsh"))
+            return Types.Shader;
+
+    return Types.Raw;
+}
+
+public Types getTypeOf(string filename) {
+    MemFile mf = loadFile(filename);
+    Types ts = fileSigToType(mf);
+    return (ts == Types.Undecisive) ? fileExtToType(filename) : ts;
+}

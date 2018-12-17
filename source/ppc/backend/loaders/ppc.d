@@ -104,10 +104,10 @@ ubyte[] savePPC(PPC ppc) {
     // Write file signature.
     mf.write(FileSignature.ContainerPPC.ptr, FileSignature.ContainerPPC.length, 1, &mf);
     mf.write(&ppc.version_, uint.sizeof, 1, &mf);
-    mf.write(&options, ulong.sizeof, 1, &file);
-    mf.write(&contentType, ubyte.sizeof, 1, &file);
-    mf.write(&author, char.sizeof, 32, &file);
-    mf.write(&license, char.sizeof, 16, &file);
-    mf.write(&dataStr, ubyte.sizeof, mf.length - mf.tell(&file), &file);
+    mf.write(&ppc.options, ulong.sizeof, 1, &file);
+    mf.write(&ppc.contentType, ubyte.sizeof, 1, &file);
+    mf.write(&ppc.author, char.sizeof, 32, &file);
+    mf.write(&ppc.license, char.sizeof, 16, &file);
+    mf.write(&ppc.dataStr, ubyte.sizeof, mf.length - mf.tell(&file), &file);
     return oArr;
 }

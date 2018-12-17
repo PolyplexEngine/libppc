@@ -93,26 +93,26 @@ PNGHeader loadPNGHeader(MemFile file) {
     Loads a PNG file from memory
     loadPNG will automatically infer which bitdepth to load as (8 and 16 bit supported)
 */
-void loadPNG(MemFile file, ref Image oimg) {
+void loadPNG(MemFile file, Image* oimg) {
     immutable PNGHeader header = loadPNGHeader(file);
 
-    oimg.info.imageType = ImageType.PNG;
+    (*oimg).info.imageType = ImageType.PNG;
 
     // Load PNG with the right bit depth.
     if (header.bitDepth >= 16) {
         IFImage16 img = read_png16_from_mem(file.arrayptr[0..file.length]);
         
-        oimg.info.colorFormat = cast(ColorFormat)img.c;
-        oimg.info.width = img.w;
-        oimg.info.height = img.h;
-        oimg.pixelData = cast(ubyte[])img.pixels;
+        (*oimg).info.colorFormat = cast(ColorFormat)img.c;
+        (*oimg).info.width = img.w;
+        (*oimg).info.height = img.h;
+        (*oimg).pixelData = cast(ubyte[])img.pixels;
     } else {
         IFImage img = read_png_from_mem(file.arrayptr[0..file.length]);
         
-        oimg.info.colorFormat = cast(ColorFormat)img.c;
-        oimg.info.width = img.w;
-        oimg.info.height = img.h;
-        oimg.pixelData = img.pixels;
+        (*oimg).info.colorFormat = cast(ColorFormat)img.c;
+        (*oimg).info.width = img.w;
+        (*oimg).info.height = img.h;
+        (*oimg).pixelData = img.pixels;
     }
 }
 
@@ -122,7 +122,7 @@ void loadPNG(MemFile file, ref Image oimg) {
 */
 Image loadPNG(MemFile file) {
     Image oimg;
-    loadPNG(file, oimg);
+    loadPNG(file, &oimg);
     return oimg;
 }
 

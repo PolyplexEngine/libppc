@@ -24,8 +24,32 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.types.shader;
-import ppc.backend.loaders.shader.glsl;
 import ppc.backend.loaders.shader.ppsl;
 import ppc.backend.loaders.shader.psgl;
 import ppc.backend;
 import ppc.backend.cfile;
+
+public enum ShaderType {
+    Compiled,
+    Fragment,
+    Vertex,
+    Geometry,
+}
+
+/// A GLSL shader
+public struct GLSLShader {
+public:
+    /// The shader code
+    ubyte[] code;
+
+    string toString() {
+        return cast(string)code;
+    }
+}
+
+public struct Shader {
+public:
+    /// List of shaders for this bundle
+    GLSLShader[ShaderType] shaders;
+
+}

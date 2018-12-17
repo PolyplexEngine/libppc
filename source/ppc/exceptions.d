@@ -17,3 +17,9 @@ public class InvalidHeaderSizeException : Exception {
 		super("An invalid sized header was specified when handling <" ~ origin ~ ">, content might be corrupt?");
 	}
 }
+
+public class OutOfRangeException : Exception {
+	this() {
+		super("Index was out of range");
+	}
+}

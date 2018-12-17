@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.cfile;
 import ppc.backend;
+import ppc.exceptions;
 
 import core.stdc.stdlib;
 import core.stdc.string;
@@ -90,9 +91,15 @@ public:
     /// Length of data.
     size_t length;
 
+    this(ubyte* array, size_t length) {
+        this.arrayptr = array;
+        this.readhead = this.arrayptr;
+        this.length = length;
+    }
+
     /// MemFile implementation of C fseek.
-    static extern (C) int seek(void* data, int64_t offset, int whence) nothrow {
-        MemFile* mf = cast(MemFile*)data;
+    static extern (C) int seek(void* fileStream, int64_t offset, int whence) nothrow {
+        MemFile* mf = cast(MemFile*)fileStream;
         switch (whence) {
             case SEEK_CUR:
                 mf.readhead += offset;
@@ -120,8 +127,8 @@ public:
     }
 
     /// MemFile implementation of C fread.
-    static extern (C) size_t read(void* data, size_t bytes, size_t to_read, void* source) nothrow {
-        MemFile* mf = cast(MemFile*)source;
+    static extern (C) size_t read(void* data, size_t bytes, size_t to_read, void* fileStream) nothrow {
+        MemFile* mf = cast(MemFile*)fileStream;
         
         size_t len = bytes*to_read;
         if (mf.readhead + len > mf.arrayptr+mf.length) {
@@ -132,16 +139,41 @@ public:
         return len;
     }
 
+    // TODO: Improve the implementation of this.
+    /// MemFile implementation of C fwrite
+    /// Returns 0 if index is out of range
+    static extern (C) size_t write(void* data, size_t bytes, size_t to_write, void* fileStream) nothrow {
+        MemFile* mf = cast(MemFile*)fileStream;
+
+        size_t len = bytes*to_write;
+        if (mf.readhead + len > mf.arrayptr+mf.length) {
+
+            // Allocation
+            ubyte[] newArr = new ubyte[mf.length+len];
+            immutable size_t sk = tell(&mf);
+            
+            // Resize/copy operation
+            memoryCopy(mf.arrayptr, newArr.ptr, mf.length);
+            mf.arrayptr = newArr.ptr;
+            mf.readhead = mf.arrayptr+sk;
+            mf.length = mf.length+len;
+
+        }
+        memcpy(mf.readhead, data, len);
+        mf.readhead += len;
+        return len;
+    }
+
     /// MemFile implementation of C fclose.
-    static extern (C) int close(void* data) nothrow {
+    static extern (C) int close(void* fileStream) nothrow {
         return 0;
     }
 
     
 
     /// MemFile implementation of C ftell.
-    static extern (C) clong tell(void* data) nothrow {
-        MemFile* mf = cast(MemFile*)data;
+    static extern (C) clong tell(void* fileStream) nothrow {
+        MemFile* mf = cast(MemFile*)fileStream;
 
         // Screw C file handling, make sure that the right type of long is used on each platform...
         version(X86) {
@@ -162,10 +194,14 @@ public:
 
         }
     }
+
+    ubyte[] toArray() nothrow {
+        return cast(ubyte[])arrayptr[0..length];
+    }
     
 }
 
 /// C-style memory copy.
-void memoryCopy(void* input, void* output, size_t length) {
+void memoryCopy(void* input, void* output, size_t length) nothrow {
     memcpy(input, output, length);
 } 

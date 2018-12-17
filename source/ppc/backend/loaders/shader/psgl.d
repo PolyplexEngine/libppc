@@ -24,7 +24,41 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.shader.psgl;
+import ppc.backend.cfile;
+import ppc.types.shader;
+import ppc.backend.signatures;
 /**
     Polyplex Split GLSL
     A simple GLSL format combining GLSL shaders in to one file.
 */
+
+///
+void loadPSGL(MemFile file, Shader* shader) {
+    GLSLShader[ShaderType] shaderCode;
+    ShaderType currentShaderType;
+    uint shaderLength;
+    ubyte[] shaderData;
+    size_t index;
+    size_t length = file.length-FileSignature.ShaderPSGL.length;
+
+    // Seek to data beginning
+    file.seek(&file, FileSignature.ShaderPSGL.length, SeekStart);
+
+    while(index < length) {
+        // Read data into temp variables
+        index += file.read(&currentShaderType,  ShaderType.sizeof,  1,              &file);
+        index += file.read(&shaderLength,       uint.sizeof,        1,              &file);
+        index += file.read(shaderData.ptr,      ubyte.sizeof,       shaderLength,   &file);
+
+        shaderCode[currentShaderType] = GLSLShader(shaderData);
+    }
+    (*shader).shaders = shaderCode;
+}
+
+/// 
+ubyte[] savePSGL(Shader shader) {
+    ubyte[] oArr = new ubyte[shader.sizeof];
+    MemFile mf = MemFile(oArr.ptr, oArr.length);
+    mf.write(&shader, shader.sizeof, 1, &mf);
+    return oArr;
+}

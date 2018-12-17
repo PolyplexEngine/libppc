@@ -99,8 +99,15 @@ public:
 //  TODO: Replace this with some prettier code
 /// Returns a writable PPC file as a ubyte array
 ubyte[] savePPC(PPC ppc) {
-    ubyte[] oArr = new ubyte[FileSignature.ContainerPPC.length+MemFile.sizeof+ppc.dataStr.length];
-    memoryCopy(FileSignature.ContainerPPC.ptr, oArr.ptr, FileSignature.ContainerPPC.length);
-    memoryCopy(&ppc, oArr.ptr+FileSignature.ContainerPPC.length, ppc.sizeof);
+    ubyte[] oArr = new ubyte[FileSignature.ContainerPPC.length];
+    MemFile mf = MemFile(oArr.ptr, oArr.length);
+    // Write file signature.
+    mf.write(FileSignature.ContainerPPC.ptr, FileSignature.ContainerPPC.length, 1, &mf);
+    mf.write(&ppc.version_, uint.sizeof, 1, &mf);
+    mf.write(&options, ulong.sizeof, 1, &file);
+    mf.write(&contentType, ubyte.sizeof, 1, &file);
+    mf.write(&author, char.sizeof, 32, &file);
+    mf.write(&license, char.sizeof, 16, &file);
+    mf.write(&dataStr, ubyte.sizeof, mf.length - mf.tell(&file), &file);
     return oArr;
 }

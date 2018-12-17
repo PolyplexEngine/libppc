@@ -95,10 +95,10 @@ public:
     /// Creates an image from memory
     this(MemFile file) {
         if (file.hasSignature(FileSignature.ImagePNG)) {
-            loadPNG(file, this);
+            loadPNG(file, &this);
         } else {
             /// Must be TARGA, has no file signature.
-            loadTGA(file, this);
+            loadTGA(file, &this);
         }
     }
 }

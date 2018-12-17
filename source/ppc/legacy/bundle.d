@@ -1,7 +1,7 @@
-module ppc.bundle;
-import ppc;
+module ppc.legacy.bundle;
+import ppc.legacy;
 import ppc.exceptions;
-import ppc.utils;
+import ppc.legacy.utils;
 
 import std.stdio;
 import std.conv;

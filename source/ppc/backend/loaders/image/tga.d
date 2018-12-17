@@ -1,5 +1,4 @@
-Boost Software License - Version 1.0 - August 17th, 2003
-
+/**
 Copyright (c) 2018 Clipsey (clipseypone@gmail.com)
 
 Permission is hereby granted, free of charge, to any person or organization
@@ -23,3 +22,36 @@ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
 FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+*/
+module ppc.backend.loaders.image.tga;
+import ppc.backend.cfile;
+import ppc.types.image;
+import imageformats;
+
+/**
+    Loads an TGA image from memory.
+*/
+void loadTGA(MemFile file, Image* oimg) {
+    IFImage img = read_tga_from_mem(file.arrayptr[0..file.length]);
+    (*oimg).info.imageType = ImageType.TGA;
+    (*oimg).info.colorFormat = cast(ColorFormat)img.c;
+    (*oimg).info.width = img.w;
+    (*oimg).info.height = img.h;
+    (*oimg).pixelData = img.pixels;
+}
+
+/**
+    Loads an TGA image from memory.
+*/
+Image loadTGA(MemFile file) {
+    Image oimg;
+    loadTGA(file, &oimg);
+    return oimg;
+}
+
+/// Returns a writable TGA as a ubyte array
+ubyte[] saveTGA(Image img) {
+    ubyte[] o;
+    write_tga_to_mem(img.width, img.height, o);
+    return o;
+}

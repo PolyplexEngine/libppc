@@ -1,5 +1,5 @@
-module ppc.shader;
-import ppc;
+module ppc.legacy.shader;
+import ppc.legacy;
 import ppc.exceptions;
 
 import std.conv;

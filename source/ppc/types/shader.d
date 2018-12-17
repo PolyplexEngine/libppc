@@ -1,5 +1,4 @@
-Boost Software License - Version 1.0 - August 17th, 2003
-
+/**
 Copyright (c) 2018 Clipsey (clipseypone@gmail.com)
 
 Permission is hereby granted, free of charge, to any person or organization
@@ -23,3 +22,34 @@ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
 FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+*/
+module ppc.types.shader;
+import ppc.backend.loaders.shader.ppsl;
+import ppc.backend.loaders.shader.psgl;
+import ppc.backend;
+import ppc.backend.cfile;
+
+public enum ShaderType {
+    Compiled,
+    Fragment,
+    Vertex,
+    Geometry,
+}
+
+/// A GLSL shader
+public struct GLSLShader {
+public:
+    /// The shader code
+    ubyte[] code;
+
+    string toString() {
+        return cast(string)code;
+    }
+}
+
+public struct Shader {
+public:
+    /// List of shaders for this bundle
+    GLSLShader[ShaderType] shaders;
+
+}

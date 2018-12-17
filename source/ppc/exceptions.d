@@ -1,13 +1,25 @@
 module ppc.exceptions;
 
-public class InvalidFileFormatException : Exception {
-	this() {
-		super("Specified file was not a polyplex content file!");
+public class InvalidFileException : Exception {
+	this(string format) {
+		super("File was not a(n) <" ~ format ~ "> file");
+	}
+}
+
+public class InvalidMagicBytesException : Exception {
+	this(string format) {
+		super("File did not have magic bytes matching the <" ~ format ~ "> file format");
 	}
 }
 
 public class InvalidHeaderSizeException : Exception {
 	this(string origin) {
-		super("An invalid sized header was specified when handling " ~ origin ~ ", content might be corrupt?");
+		super("An invalid sized header was specified when handling <" ~ origin ~ ">, content might be corrupt?");
+	}
+}
+
+public class OutOfRangeException : Exception {
+	this() {
+		super("Index was out of range");
 	}
 }

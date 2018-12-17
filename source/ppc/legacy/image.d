@@ -1,5 +1,5 @@
-module ppc.image;
-import ppc;
+module ppc.legacy.image;
+import ppc.legacy;
 import imageformats;
 import std.stdio;
 import std.bitmanip;

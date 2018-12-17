@@ -50,8 +50,8 @@ public enum Types {
 
 public Types fileSigToType(MemFile mf) {
     if (mf.hasSignature(FileSignature.AudioOGG) || 
-        mf.hasSignature(FileSignature.AudioPCM || 
-        mf.hasSignature(FileSignature.AudioWAV))) 
+        mf.hasSignature(FileSignature.AudioPCM) || 
+        mf.hasSignature(FileSignature.AudioWAV))
             return Types.Audio;
     if (mf.hasSignature(FileSignature.ImageBMP) || 
         mf.hasSignature(FileSignature.ImagePNG) ||
@@ -64,21 +64,31 @@ public Types fileSigToType(MemFile mf) {
 
 public Types fileExtToType(string filename) {
     import std.path : extension;
-    if (filename.extension(".wav") || 
-        filename.extension(".ogg") || 
-        filename.extension(".pcm"))
+
+    switch(filename.extension) {
+        case ".wav":
+        case ".ogg":
+        case ".pcm":
             return Types.Audio;
-    if (filename.extension(".png") ||
-        filename.extension(".tga") ||
-        filename.extension(".pti") ||
-        filename.extension(".bmp"))
+
+        case ".png":
+        case ".tga":
+        case ".pti":
+        case ".bmp":
             return Types.Image;
-    if (filename.extension(".vsh") ||
-        filename.extension(".fsh") ||
-        filename.extension(".gsh"))
+
+        case ".vsh":
+        case ".fsh":
+        case ".gsh":
             return Types.Shader;
 
-    return Types.Raw;
+        case ".fbx":
+        case ".obj":
+            return Types.Model;
+            
+        default:
+            return Types.Raw;
+    }
 }
 
 public Types getTypeOf(string filename) {

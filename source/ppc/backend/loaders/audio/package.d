@@ -28,10 +28,16 @@ public:
     abstract long read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED);
 
     /// Seek to position in file
-    abstract void seek(long position = 0);
+    abstract void seekRaw(long position = 0);
 
     /// Seek to a PCM position in file
-    abstract void seekSample(long position = 0);
+    abstract void seek(long position = 0);
+
+    /// Returns the position in the stream
+    abstract size_t tellRaw();
+    
+    /// Returns the position in the stream
+    abstract size_t tell();
 
     /**
         Read data of ogg stream in to array of specified type.

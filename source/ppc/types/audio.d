@@ -74,8 +74,8 @@ public {
         AudioInfo info;
 
     private:
-        MemFile* mref;
         AudioStream audioFile;
+        MemFile* mref;
 
     public:
         /// Creates Audio from memory
@@ -96,17 +96,11 @@ public {
             this(f);
         }
 
-        ~this() {
-            destroy(audioFile);
-
-            // Collect the MemFile.
-            destroy(*mref);
-        }
-
         /**
             Read [bufferLength] bytes from stream to [ptr] 
         */
         ulong read(byte* ptr, size_t bufferLength = 4096) {
+            if (audioFile is null) return 0;
             return audioFile.read(ptr, cast(uint)bufferLength);
         }
 
@@ -133,7 +127,12 @@ public {
             Seek to a sample in the stream
         */
         void seekSample(long position = 0) {
-            audioFile.seekSample(position);
+            audioFile.seekRaw(position);
+        }
+
+        /// Returns the position in the stream
+        size_t tell() {
+            return audioFile.tell();
         }
     }
 }

@@ -78,13 +78,14 @@ public:
     }
 }
 
+private ov_callbacks callbacks;
+
 /// An OGG audio file
 public class Ogg : AudioStream {
 private:
     MemFile mfile;
-    OggVorbis_File vfile;
-    static ov_callbacks callbacks;
-    int currentSection = 0;
+    __gshared OggVorbis_File vfile;
+    int currentSection;
 
 public:
     /// information related to the OGG file
@@ -101,7 +102,7 @@ public:
         mfile = file;
 
         // Open file from memory
-        if (ov_open_callbacks(&mfile, &vfile, null, 0, Ogg.callbacks) < 0) {
+        if (ov_open_callbacks(&mfile, &vfile, null, 0, callbacks) < 0) {
             throw new Exception("Audio does not seem to be an ogg bitstream!...");
         }
 
@@ -141,13 +142,23 @@ public:
     }
 
     /// Seek to position in file
-    override void seek(long position = 0) {
+    override void seekRaw(long position = 0) {
         ov_raw_seek(&vfile, position);
     }
 
     /// Seek to a PCM position in file
-    override void seekSample(long position = 0) {
+    override void seek(long position = 0) {
         ov_pcm_seek(&vfile, position);
+    }
+
+    /// Returns the position in the stream
+    override size_t tellRaw() {
+        return ov_raw_tell(&vfile);
+    }
+
+    /// Returns the position in the stream
+    override size_t tell() {
+        return ov_pcm_tell(&vfile);
     }
 
     /**
@@ -175,8 +186,8 @@ void loadOggFormat() {
 // Keep one instance of the callback pointer instead of many.
 shared static this() {
     loadOggFormat();
-    Ogg.callbacks.read_func = &MemFile.read;
-    Ogg.callbacks.seek_func = &MemFile.seek;
-    Ogg.callbacks.close_func = &MemFile.close;
-    Ogg.callbacks.tell_func = &MemFile.tell;
+    callbacks.read_func = &MemFile.read;
+    callbacks.seek_func = &MemFile.seek;
+    callbacks.close_func = &MemFile.close;
+    callbacks.tell_func = &MemFile.tell;
 }

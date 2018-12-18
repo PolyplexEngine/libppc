@@ -58,7 +58,7 @@ public {
         size_t bitrate;
 
         /// Length of stream in samples
-        size_t length;
+        size_t pcmLength;
 
         /// Length of stream in bytes
         size_t rawLength;
@@ -110,8 +110,16 @@ public {
             return audioFile.read(ptr, cast(uint)bufferLength);
         }
 
-        byte[] readAll() {
-            return audioFile.readAll();
+        byte[] readAll(uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) {
+            import std.stdio;
+            byte[] buff = new byte[4096];
+            byte[] bytes;
+            long bread = this.read(buff.ptr);
+            while (bread != 0) {
+                bread = this.read(buff.ptr);
+                bytes ~= buff[0..bread];
+            }
+            return bytes;
         }
 
         /**

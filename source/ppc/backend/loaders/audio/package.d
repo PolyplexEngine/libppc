@@ -34,12 +34,6 @@ public:
     abstract void seekSample(long position = 0);
 
     /**
-        Reads entire stream in at once
-        Not recommended for streams longer than a few seconds
-    */
-    abstract byte[] readAll();
-
-    /**
         Read data of ogg stream in to array of specified type.
         This in untested and should probably not be used
         see the read() function instead.

@@ -81,10 +81,10 @@ public:
 /// An OGG audio file
 public class Ogg : AudioStream {
 private:
+    MemFile mfile;
     OggVorbis_File vfile;
     static ov_callbacks callbacks;
-    int currentSection;
-    long bytesRead;
+    int currentSection = 0;
 
 public:
     /// information related to the OGG file
@@ -98,8 +98,10 @@ public:
     /// Construct file from memory
     /// Check loadFile from ppc.backend.cfile if you want to load from a raw file.
     this(MemFile file) {
+        mfile = file;
+
         // Open file from memory
-        if (ov_open_callbacks(&file, &vfile, null, 0, Ogg.callbacks) < 0) {
+        if (ov_open_callbacks(&mfile, &vfile, null, 0, Ogg.callbacks) < 0) {
             throw new Exception("Audio does not seem to be an ogg bitstream!...");
         }
 
@@ -118,9 +120,14 @@ public:
         returns amount of bytes read
     */
     override long read(byte* ptr, uint bufferLength = 4096, uint bitdepth = SAMPLE_DEPTH_16BIT, bool signed = SAMPLE_SIGNED) {
+        import std.stdio;
         // Read samples of size bufferLength to specified ptr
-		version(BigEndian)  bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
-        else                bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+		version(BigEndian){
+            long bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, 0, 2, 1, &currentSection);//SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+        } else {
+            long bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, 0, 2, 1, &currentSection);//SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
+        }              
+
         switch(bytesRead) {
             case (OV_HOLE):
                 throw new Exception("Flow of data interrupted! Corrupt page?");
@@ -144,21 +151,6 @@ public:
     }
 
     /**
-        Reads entire stream in at once
-        Not recommended for streams longer than a few seconds
-    */
-    override byte[] readAll() {
-        byte[] bytes = new byte[info.rawLength];
-        size_t read;
-        size_t totalRead;
-        while (true) {
-            read = this.read(bytes.ptr+totalRead);
-            totalRead += read;
-            if (read == 0) return bytes;
-        }
-    }
-
-    /**
         Read data of ogg stream in to array of specified type.
         This in untested and should probably not be used
         see the read() function instead.
@@ -175,6 +167,7 @@ public:
 ///Load libogg and libvorbis
 void loadOggFormat() {
     DerelictOgg.load();
+    DerelictVorbis.load();
     DerelictVorbisFile.load();
 }
 

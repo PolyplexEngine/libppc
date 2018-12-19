@@ -84,7 +84,7 @@ private ov_callbacks callbacks;
 public class Ogg : AudioStream {
 private:
     MemFile mfile;
-    __gshared OggVorbis_File vfile;
+    OggVorbis_File vfile;
     int currentSection;
 
 public:
@@ -127,7 +127,7 @@ public:
             long bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, 0, 2, 1, &currentSection);//SAMPLE_BIG_ENDIAN, bitdepth, cast(int)signed, &currentSection);
         } else {
             long bytesRead = ov_read(&vfile, ptr, cast(int)bufferLength, 0, 2, 1, &currentSection);//SAMPLE_LITTLE_ENDIAN, bitdepth, cast(int)signed, &currentSection);
-        }              
+        }
 
         switch(bytesRead) {
             case (OV_HOLE):

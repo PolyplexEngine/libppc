@@ -24,7 +24,84 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 module ppc.backend.loaders.image.pti;
+import ppc.backend.cfile;
+import ppc.backend.signatures;
+import ppc.types.image;
 /**
     Polyplex Tagged Image Format
     A lossless image format with tags.
 */
+
+/**
+    Loads an PTI image from memory.
+*/
+void loadPTI(MemFile file, Image* oimg) {
+    uint width;
+    uint height;
+    uint tagMapLength;
+    ColorFormat colorFormat;
+    ubyte[] header;
+
+    (*oimg).info.imageType = ImageType.PTI;
+
+    // Check that this is actually an PTI file.
+    file.read(&header, ubyte.sizeof, WritableFileSigs.ImagePTI.length, &file);
+    if (header != WritableFileSigs.ImagePTI) throw new Exception("Invalid PTI texture file! (header mismatch)");
+
+    // Read width/height and prepare pixel data
+    file.read(&width, uint.sizeof, 1, &file);
+    file.read(&height, uint.sizeof, 1, &file);
+    (*oImg).pixelData = new ubyte[(width*height)*4];
+
+    // Read color format
+    file.read(&colorFormat, ColorFormat.sizeof, 1, &file);
+
+    // TODO: Use tagMap.
+    // skips the tag map for now
+    file.read(&tagMapLength, uint.sizeof, 1, &file);
+    file.seek(&file, tagMapLength, SeekCurrent);
+
+    // Read pixel data
+    file.read(&(*oImg).pixelData, ubyte.sizeof, width*height, &file);
+
+    // Set image info
+    (*oimg).info.colorFormat = colorFormat;
+    (*oImg).info.width = width;
+    (*oImg).info.height = height;
+}
+
+/**
+    Loads an PTI image from memory.
+*/
+Image loadPTI(MemFile file) {
+    Image oimg;
+    loadPTI(file, &oimg);
+    return oimg;
+}
+
+/// Returns a writable PTI as a ubyte array
+ubyte[] savePTI(Image img) {
+    uint tagMapLength = 0;
+    ubyte[] o;
+    MemFile mf = MemFile(o.ptr, 0);
+
+    // Write file header
+    mf.write(WritableFileSigs.ImagePTI.ptr, ubyte.sizeof, WritableFileSigs.ImagePTI.length, &mf);
+
+    // Set data in a known byte-size
+    uint width = cast(uint)img.width;
+    uint height = cast(uint)img.height;
+
+    // Set image info
+    mf.write(&width, uint.sizeof, 1, &mf);
+    mf.write(&height, uint.sizeof, 1, &mf);
+    mf.write(&img.info.colorFormat, ColorFormat.sizeof, 1, &mf);
+
+    // TODO: implement image tags
+    mf.write(&tagMapLength, uint.sizeof, 1, &mf);
+
+    // Write raw pixel data.
+    mf.write(&img.pixelData, ubyte.sizeof, img.pixelData.length, &mf);
+
+    return o;
+}

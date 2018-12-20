@@ -92,10 +92,26 @@ public:
         this(f);
     }
 
+    /// Converts image to a type, returns byte array of image data (to be written to disk or otherwise manipulated)
+    ubyte[] convertTo(ImageType type) {
+        switch(type) {
+            case ImageType.PTI:
+                return savePTI(this);
+            case ImageType.TGA:
+                return saveTGA(this);
+            case ImageType.PNG:
+                return savePNG(this);
+            default:
+                throw new Exception("This image format is not implemented yet.");
+        }
+    }
+
     /// Creates an image from memory
     this(MemFile file) {
         if (file.hasSignature(FileSignature.ImagePNG)) {
             loadPNG(file, &this);
+        } else if (file.hasSignature(FileSignature.ImagePTI)) {
+            loadPTI(file, &this);
         } else {
             /// Must be TARGA, has no file signature.
             loadTGA(file, &this);

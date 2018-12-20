@@ -27,6 +27,8 @@ module ppc.backend.loaders.image.pti;
 import ppc.backend.cfile;
 import ppc.backend.signatures;
 import ppc.types.image;
+import std.conv;
+import std.stdio;
 /**
     Polyplex Tagged Image Format
     A lossless image format with tags.
@@ -40,18 +42,17 @@ void loadPTI(MemFile file, Image* oimg) {
     uint height;
     uint tagMapLength;
     ColorFormat colorFormat;
-    ubyte[] header;
+    ubyte[] header = new ubyte[WritableFileSigs.ImagePTI.length];
 
     (*oimg).info.imageType = ImageType.PTI;
 
     // Check that this is actually an PTI file.
-    file.read(&header, ubyte.sizeof, WritableFileSigs.ImagePTI.length, &file);
+    file.read(header.ptr, ubyte.sizeof, WritableFileSigs.ImagePTI.length, &file);
     if (header != WritableFileSigs.ImagePTI) throw new Exception("Invalid PTI texture file! (header mismatch)");
 
     // Read width/height and prepare pixel data
     file.read(&width, uint.sizeof, 1, &file);
     file.read(&height, uint.sizeof, 1, &file);
-    (*oimg).pixelData = new ubyte[(width*height)*4];
 
     // Read color format
     file.read(&colorFormat, ColorFormat.sizeof, 1, &file);
@@ -61,8 +62,11 @@ void loadPTI(MemFile file, Image* oimg) {
     file.read(&tagMapLength, uint.sizeof, 1, &file);
     file.seek(&file, tagMapLength, SeekCurrent);
 
+    size_t cur = cast(size_t)file.tell(&file);
+    (*oimg).pixelData = new ubyte[file.length - cur];
+
     // Read pixel data
-    file.read(&(*oimg).pixelData, ubyte.sizeof, width*height, &file);
+    file.read(oimg.pixelData.ptr, ubyte.sizeof, oimg.pixelData.length, &file);
 
     // Set image info
     (*oimg).info.colorFormat = colorFormat;

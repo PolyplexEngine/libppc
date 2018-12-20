@@ -27,8 +27,6 @@ module ppc.backend.loaders.image.pti;
 import ppc.backend.cfile;
 import ppc.backend.signatures;
 import ppc.types.image;
-import std.conv;
-import std.stdio;
 /**
     Polyplex Tagged Image Format
     A lossless image format with tags.

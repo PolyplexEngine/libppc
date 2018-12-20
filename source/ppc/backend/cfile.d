@@ -153,7 +153,7 @@ public:
 
         ubyte[] newArr;
         size_t len = bytes*to_write;
-        if (mf.readhead + len >= mf.arrayptr+mf.length) {
+        if (mf.readhead + len > mf.arrayptr+mf.length) {
             
             // Offset from last iteration
             size_t offset = (cast(size_t)mf.readhead-cast(size_t)mf.arrayptr);

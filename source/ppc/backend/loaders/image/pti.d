@@ -83,9 +83,7 @@ import std.stdio;
 /// Returns a writable PTI as a ubyte array
 ubyte[] savePTI(Image img) {
     uint tagMapLength = 0;
-    ubyte[] o;
-    ubyte[] pixelData = img.pixelData;
-    MemFile mf = MemFile(o.ptr, 0);
+    MemFile mf;
 
     // Write file header
     mf.write(WritableFileSigs.ImagePTI.ptr, ubyte.sizeof, WritableFileSigs.ImagePTI.length, &mf);
@@ -105,5 +103,5 @@ ubyte[] savePTI(Image img) {
     // Write raw pixel data.
     mf.write(img.pixelData.ptr, ubyte.sizeof, img.pixelData.length, &mf);
 
-    return o;
+    return mf.toArray;
 }

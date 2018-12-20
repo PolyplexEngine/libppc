@@ -51,7 +51,7 @@ void loadPTI(MemFile file, Image* oimg) {
     // Read width/height and prepare pixel data
     file.read(&width, uint.sizeof, 1, &file);
     file.read(&height, uint.sizeof, 1, &file);
-    (*oImg).pixelData = new ubyte[(width*height)*4];
+    (*oimg).pixelData = new ubyte[(width*height)*4];
 
     // Read color format
     file.read(&colorFormat, ColorFormat.sizeof, 1, &file);
@@ -62,12 +62,12 @@ void loadPTI(MemFile file, Image* oimg) {
     file.seek(&file, tagMapLength, SeekCurrent);
 
     // Read pixel data
-    file.read(&(*oImg).pixelData, ubyte.sizeof, width*height, &file);
+    file.read(&(*oimg).pixelData, ubyte.sizeof, width*height, &file);
 
     // Set image info
     (*oimg).info.colorFormat = colorFormat;
-    (*oImg).info.width = width;
-    (*oImg).info.height = height;
+    (*oimg).info.width = width;
+    (*oimg).info.height = height;
 }
 
 /**
@@ -79,10 +79,12 @@ Image loadPTI(MemFile file) {
     return oimg;
 }
 
+import std.stdio;
 /// Returns a writable PTI as a ubyte array
 ubyte[] savePTI(Image img) {
     uint tagMapLength = 0;
     ubyte[] o;
+    ubyte[] pixelData = img.pixelData;
     MemFile mf = MemFile(o.ptr, 0);
 
     // Write file header
@@ -101,7 +103,7 @@ ubyte[] savePTI(Image img) {
     mf.write(&tagMapLength, uint.sizeof, 1, &mf);
 
     // Write raw pixel data.
-    mf.write(&img.pixelData, ubyte.sizeof, img.pixelData.length, &mf);
+    mf.write(img.pixelData.ptr, ubyte.sizeof, img.pixelData.length, &mf);
 
     return o;
 }

@@ -108,9 +108,9 @@ public {
             import std.stdio;
             byte[] buff = new byte[4096];
             byte[] bytes;
-            long bread = this.read(buff.ptr);
+            size_t bread = cast(size_t)this.read(buff.ptr);
             while (bread != 0) {
-                bread = this.read(buff.ptr);
+                bread = cast(size_t)this.read(buff.ptr);
                 bytes ~= buff[0..bread];
             }
             return bytes;

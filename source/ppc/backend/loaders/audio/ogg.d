@@ -153,12 +153,12 @@ public:
 
     /// Returns the position in the stream
     override size_t tellRaw() {
-        return ov_raw_tell(&vfile);
+        return cast(size_t)ov_raw_tell(&vfile);
     }
 
     /// Returns the position in the stream
     override size_t tell() {
-        return ov_pcm_tell(&vfile);
+        return cast(size_t)ov_pcm_tell(&vfile);
     }
 
     /**

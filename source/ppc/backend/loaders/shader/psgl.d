@@ -34,37 +34,51 @@ import ppc.backend.signatures;
 
 ///
 void loadPSGL(MemFile file, Shader* shader) {
+    import std.stdio;
     GLSLShader[ShaderType] shaderCode;
-    ShaderType currentShaderType;
-    uint shaderLength;
-    ubyte[] shaderData;
     size_t index;
-    size_t length = file.length-FileSignature.ShaderPSGL.length;
+    size_t length = file.length-WritableFileSigs.ShaderPSGL.length;
 
     // Seek to data beginning
-    file.seek(&file, FileSignature.ShaderPSGL.length, SeekStart);
-
+    file.seek(&file, WritableFileSigs.ShaderPSGL.length, SeekStart);
     while(index < length) {
+        ShaderType currentShaderType;
+        uint shaderLength;
+        ubyte[] shaderData;
+
         // Read data into temp variables
         index += file.read(&currentShaderType,  ShaderType.sizeof,  1,              &file);
         index += file.read(&shaderLength,       uint.sizeof,        1,              &file);
+
+        // Ensure array is big enough
+        shaderData.length = shaderLength;
         index += file.read(shaderData.ptr,      ubyte.sizeof,       shaderLength,   &file);
 
         shaderCode[currentShaderType] = GLSLShader(shaderData);
     }
-    (*shader).shaders = shaderCode;
+    shader.shaders = shaderCode;
 }
 
 /// 
 ubyte[] savePSGL(Shader shader) {
     ubyte[] oArr = new ubyte[1];
     MemFile mf = MemFile(oArr.ptr, oArr.length);
-    mf.write(FileSignature.ShaderPSGL.ptr, ubyte.sizeof, FileSignature.ShaderPSGL.length, &mf);
+    mf.write(WritableFileSigs.ShaderPSGL.ptr, ubyte.sizeof, WritableFileSigs.ShaderPSGL.length, &mf);
     foreach(typ, shd; shader.shaders) {
-        size_t len = shd.code.length;
+        
+        // Enforce proper EOF.
+        ubyte[] code = shd.code;
+        if (typ != ShaderType.Compiled) {
+            if (code[$-2..$] != [0x0a, 0x00]) {
+                code ~= [0x0a, 0x00];
+            }
+        }
+
+        // Write it down.
+        size_t len = code.length;
         mf.write(&typ, ShaderType.sizeof, 1, &mf);
         mf.write(&len, uint.sizeof, 1, &mf);
-        mf.write(shd.code.ptr, ubyte.sizeof, len, &mf);
+        mf.write(code.ptr, ubyte.sizeof, len, &mf);
     }
     return mf.toArray();
 }

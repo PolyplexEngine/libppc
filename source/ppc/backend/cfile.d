@@ -31,6 +31,12 @@ import core.stdc.stdlib;
 import core.stdc.string;
 import core.stdc.stdio;
 
+// Handling for bit arch
+// Windows acts like it's 32 bit even if it's 64 bit, ugly hack to make windows work.
+version(Windows) version = BIT_32;
+else version(D_X32) version = BIT_32;
+else version(D_LP64) version = BIT_64;
+
 /// Seek based of the start of the MemFile
 /// Alias of SEEK_SET
 enum SeekStart = SEEK_SET;
@@ -183,23 +189,17 @@ public:
         MemFile* mf = cast(MemFile*)fileStream;
 
         // Screw C file handling, make sure that the right type of long is used on each platform...
-        version(X86) {
+        version(BIT_32) {
 
             // Pray that stuff doesn't break with this cast.
             return cast(clong)mf.readhead-cast(clong)mf.arrayptr;
 
-        } else version(Windows) {
-
-            // Windows C toolchain doesn't play nice at all, pray aswell here.
-            // Also why the heck would this need to exist?!?
-            return cast(clong)mf.readhead-cast(clong)mf.arrayptr;
-
-        } else version(X86_64) {
+        } else version(BIT_64) {
 
             // How it is intended to work, geez.
             return mf.readhead-mf.arrayptr;
 
-        }
+        } 
     }
 
     ubyte[] toArray() nothrow {

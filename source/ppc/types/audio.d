@@ -120,14 +120,14 @@ public {
             Seek to a byte in the stream
         */
         void seek(long position = 0) {
-            audioFile.seek(position);
+            audioFile.seekRaw(position);
         }
 
         /**
             Seek to a sample in the stream
         */
         void seekSample(long position = 0) {
-            audioFile.seekRaw(position);
+            audioFile.seek(position);
         }
 
         /// Returns the position in the stream

@@ -1,4 +1,5 @@
 module ppc.backend.loaders.font;
+public import ppc.backend.loaders.font.freetype;
 
 /// The maximum size the canvas can be before it gets split.
 version (LowMem) {
@@ -22,6 +23,14 @@ private:
     size_t placementY;
 
 public:
+    @property size_t width() {
+        return canvas[0].length;
+    }
+
+    @property size_t height() {
+        return canvas.length;
+    }
+
     /// the canvas
     ubyte[][] canvas;
 

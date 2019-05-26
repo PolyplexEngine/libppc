@@ -74,7 +74,7 @@ public:
     }
 }
 
-__gshared static FT_Library ftLib;
+private __gshared static FT_Library ftLib;
 
 shared static this() {
     auto ret = loadFreeType();

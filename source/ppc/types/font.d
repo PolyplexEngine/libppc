@@ -91,16 +91,16 @@ struct Glyph {
     float[2] bearing;
 
     /// How many pixels to advance
-    uint advance;
+    size_t advance;
 }
 
-Glyph fromRawGlyph(GlyphCanvas cvas, GlyphInfo glyph, FontFlags flags) {
+Glyph fromRawGlyph(GlyphInfo glyph, FontFlags flags) {
     Glyph output;
     output.flags = flags;
-    float gx = cast(float)glyph.x/cast(float)cvas.width;
-    float gy = cast(float)glyph.y/cast(float)cvas.height;
-    float gx2 = cast(float)(glyph.x+glyph.width)/cast(float)cvas.width;
-    float gy2 = cast(float)(glyph.y+glyph.height)/cast(float)cvas.height;
+    float gx = cast(float)glyph.x/cast(float)glyph.canvas.width;
+    float gy = cast(float)glyph.y/cast(float)glyph.canvas.height;
+    float gx2 = cast(float)(glyph.x+glyph.width)/cast(float)glyph.canvas.width;
+    float gy2 = cast(float)(glyph.y+glyph.height)/cast(float)glyph.canvas.height;
     output.coords = [gx, gy, gx2, gy2];
     output.bearing = [glyph.bearingX, glyph.bearingY];
     output.advance = glyph.advance;
@@ -167,7 +167,7 @@ public:
 
     Glyph getGlyph(char c) {
         if (c !in hlGlyphs) {
-            hlGlyphs[c] = fromRawGlyph(getRawGlyph(c));
+            hlGlyphs[c] = fromRawGlyph(getRawGlyph(c), flags);
         }
         return hlGlyphs[c];
     }

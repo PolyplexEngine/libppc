@@ -1,6 +1,22 @@
 module ppc.backend.loaders.font;
-// public import ppc.backend.loaders.font.freetype;
+public import ppc.backend.loaders.font.bitmap;
 import ppc.backend.ft;
+
+class Font {
+public:
+    abstract ref ubyte[] getTexture();
+    /++
+        Get GlyphInfo for character
+    +/
+    abstract GlyphInfo* opIndex(char c);
+
+    /++
+        Returns true if the graphics frontend should update the texture
+    +/
+    bool shouldUpdateTexture() {
+        return false;
+    }
+}
 
 struct FontRange {
     size_t start;
@@ -13,14 +29,9 @@ struct CharRange {
 
 struct FontDescription {
     /++
-        Width of a character
+        The height of a character in pixels
     +/
-    size_t width;
-
-    /++
-        Height of a character
-    +/
-    size_t height;
+    size_t size;
 
     /++
         The font file

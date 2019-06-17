@@ -1,14 +1,38 @@
 module ppc.backend.loaders.font.bitmap;
 import ppc.backend.loaders.font;
 import ppc.backend.packer;
+import ppc.backend.cfile;
 import ppc.backend.ft;
+import ppc.backend;
+import ppc.backend.signatures;
 
-class BitmapFont {
+/++
+    A font that uses a bitmap as texture.
++/
+class BitmapFont : Font{
 private:
-public:
     ubyte[] bitmapTexture;
-    GlyphInfo[char] glyphs;
+    GlyphInfo*[char] glyphs;
 
+public:
+    override ref ubyte[] getTexture() {
+        return bitmapTexture;
+    }
+
+    override GlyphInfo* opIndex(char c) {
+        if (c !in glyphs) return null;
+        return glyphs[c];
+    }
+}
+
+ubyte[] saveBMF(BitmapFont font) {
+    import msgpack : pack;
+    return WritableFileSigs.FontBMF~pack(font);
+}
+
+BitmapFont loadBMF(MemFile file) {
+    import msgpack : unpack;
+    return unpack!BitmapFont(file.arrayptr[WritableFileSigs.FontBMF.length..file.length]);
 }
 
 /++
@@ -19,7 +43,7 @@ BitmapFont fromFontDescription(FontDescription description) {
     TexturePacker packer = new TexturePacker();
     FreeType ft = new FreeType();
     FontFace face = ft.open(description.font, description.faceIndex);
-    face.setPixelSizes(description.width, description.height);
+    face.setPixelSizes(0u, description.size);
 
     foreach(series; description.characters) {
         foreach(i; series.range.start..series.range.end) {
@@ -30,12 +54,8 @@ BitmapFont fromFontDescription(FontDescription description) {
 
             // Get character and pack it in to the texture
             Glyph* glyph = face.getChar(ch);
-
-            GlyphInfo info;
-            info.size = glyph.getSize();
-            info.bearing = glyph.getBearing();
-            info.advance = glyph.getAdvance();
-            info.origin = packer.packTexture(glyph.getPixels(), glyph.getDataSize());
+            PVector origin = packer.packTexture(glyph.getPixels(), glyph.getDataSize());
+            GlyphInfo* info = new GlyphInfo(origin, glyph.getSize(), glyph.getAdvance(), glyph.getBearing());
             bmf.glyphs[ch] = info;
         }
     }

@@ -63,4 +63,11 @@ public:
     this(FontDescription fdesc) {
         font = fromFontDescription(fdesc);
     }
+
+    /++
+        Converts/saves the font
+    +/
+    ubyte[] convert() {
+        return saveBMF(cast(BitmapFont)font);
+    }
 }

@@ -12,7 +12,7 @@ import ppc.backend.signatures;
 class BitmapFont : Font{
 private:
     ubyte[] bitmapTexture;
-    GlyphInfo*[char] glyphs;
+    GlyphInfo[char] glyphs;
 
 public:
     override ref ubyte[] getTexture() {
@@ -21,7 +21,7 @@ public:
 
     override GlyphInfo* opIndex(char c) {
         if (c !in glyphs) return null;
-        return glyphs[c];
+        return &glyphs[c];
     }
 }
 
@@ -54,9 +54,11 @@ BitmapFont fromFontDescription(FontDescription description) {
 
             // Get character and pack it in to the texture
             Glyph* glyph = face.getChar(ch);
+            if (glyph is null) continue;
+
             PVector origin = packer.packTexture(glyph.getPixels(), glyph.getDataSize());
             GlyphInfo* info = new GlyphInfo(origin, glyph.getSize(), glyph.getAdvance(), glyph.getBearing());
-            bmf.glyphs[ch] = info;
+            bmf.glyphs[ch] = *info;
         }
     }
     bmf.bitmapTexture = new ubyte[](packer.buffer.length);

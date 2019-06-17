@@ -228,7 +228,7 @@ public:
     }
 }
 
-shared static this() {
+void initFT() {
     auto ret = loadFreeType();
     switch(ret) {
         case (FTSupport.noLibrary):

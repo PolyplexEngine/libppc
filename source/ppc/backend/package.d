@@ -86,3 +86,10 @@ Types compileToPPC(ubyte[] data, Types t, string outFile, PPCCreateInfo createIn
     write(outFile, savePPC(ppc));
     return t;
 }
+
+shared static this() {
+    import ppc.backend.loaders.audio.ogg : initOGG;
+    import ppc.backend.ft : initFT;
+    initOGG();
+    initFT();
+}

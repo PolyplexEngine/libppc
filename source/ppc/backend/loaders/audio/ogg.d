@@ -184,7 +184,7 @@ void loadOggFormat() {
 
 
 // Keep one instance of the callback pointer instead of many.
-shared static this() {
+void initOGG() {
     loadOggFormat();
     callbacks.read_func = &MemFile.read;
     callbacks.seek_func = &MemFile.seek;

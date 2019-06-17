@@ -165,9 +165,10 @@ private:
 
 public:
     ~this() {
-        if (face !is null) {
-            FT_Done_Face(face);
-        }
+        // HACK: This should really be cleaned up, but it causes crashes rn.
+        // if (face !is null) {
+        //     FT_Done_Face(face);
+        // }
     }
 
     this(FreeType ft, string fontName, uint faceIndex = 0) {

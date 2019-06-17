@@ -44,6 +44,17 @@ alias uint16_t = ushort;
 alias clong = c_long;
 alias culong = c_ulong;
 
+/++
+    A vector
++/
+struct PVector {
+    /// X coordinate
+    ptrdiff_t x;
+
+    /// Y coordinate
+    ptrdiff_t y;
+}
+
 struct PPCCreateInfo {
     char[32] author;
     char[16] license;

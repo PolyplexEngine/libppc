@@ -33,9 +33,6 @@ struct FNode {
     Packing algorithm implementation
 +/
 class TexturePacker {
-    /// max size
-    size_t MAX;
-
     /// Size of texture so far
     PVector textureSize;
 
@@ -46,9 +43,9 @@ class TexturePacker {
     FNode* root;
 
     this() {
-        root = new FNode(PVector(0, 0), PVector(0, 0));
-        buffer = new ubyte[](0);
-        MAX = 1024;
+        root = new FNode(PVector(0, 0), PVector(int.max, int.max));
+        textureSize = PVector(1024, 1024);
+        buffer = new ubyte[](1024*1024);
     }
 
     /++
@@ -60,17 +57,17 @@ class TexturePacker {
     FNode* pack(FNode* node, PVector size) {
         if (!node.empty) {
             return null;
-        } else if (node.left && node.right) {
+        } else if (node.left !is null && node.right !is null) {
             FNode* rval = pack(node.left, size);
             return rval !is null ? rval : pack(node.right, size);
         } else {
             PVector realSize = PVector(node.size.x, node.size.y);
 
             // Calculate actual size if on boundary
-            if (node.origin.x + node.size.x == MAX) {
+            if (node.origin.x + node.size.x == int.max) {
                 realSize.x = textureSize.x-node.origin.x;
             }
-            if (node.origin.y + node.size.y == MAX) {
+            if (node.origin.y + node.size.y == int.max) {
                 realSize.y = textureSize.y-node.origin.y;
             }
 

@@ -1,6 +1,7 @@
 module ppc.backend.loaders.font;
 public import ppc.backend.loaders.font.bitmap;
 import ppc.backend.ft;
+import vibe.data.serialization;
 
 class Font {
 public:
@@ -41,11 +42,13 @@ struct FontDescription {
     /++
         Face Index, useful in some regions
     +/
+    @optional
     uint faceIndex = 0;
 
     /++
         Range of characters to pack
     +/
+    @optional
     CharRange[] characters = [CharRange(FontRange(32, 128))];
 }
 

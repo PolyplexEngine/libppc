@@ -8,6 +8,7 @@ dependency "arsd-official:image_files" version="~>2.1.3"
 dependency "bindbc-freetype" version="~>0.5.0"
 dependency "ppc:derelict-vorbis" version=">=0.0.0"
 dependency "msgpack-d" version="~>1.0.0-beta.8"
+dependency "vibe-d:data" version="~>0.8.4"
 targetType "dynamicLibrary"
 versions "FT_26"
 subPackage {

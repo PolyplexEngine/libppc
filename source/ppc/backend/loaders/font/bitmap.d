@@ -59,6 +59,7 @@ BitmapFont fromFontDescription(FontDescription description) {
             bmf.glyphs[ch] = info;
         }
     }
+    bmf.bitmapTexture = new ubyte[](packer.buffer.length);
     bmf.bitmapTexture[] = packer.buffer;
     return bmf;
 }

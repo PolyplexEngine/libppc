@@ -165,12 +165,15 @@ private:
 
 public:
     ~this() {
-        FT_Done_Face(face);
+        if (face !is null) {
+            FT_Done_Face(face);
+        }
     }
 
     this(FreeType ft, string fontName, uint faceIndex = 0) {
         this.parent = ft;
         FT_New_Face(parent.lib, fontName.toStringz, faceIndex, &face);
+        if (face is null) throw new Exception("Unable to find font "~fontName~"! (Make sure to use full paths)");
     }
 
     this(FreeType ft, ubyte[] fontData, uint faceIndex = 0) {
@@ -186,6 +189,7 @@ public:
         FT_Load_Char(face, c, options);
         // TODO: Allow conversion
         //FT_Render_Glyph(face.glyph, FT_RENDER_MODE_NORMAL);
+        if (face.glyph is null) return null;
         return new Glyph(face.glyph, c);
     }
 }
@@ -196,9 +200,11 @@ public:
 class FreeType {
 private:
     FT_Library lib;
+    FontFace[] faces;
 
 public:
     ~this() {
+        destroy(faces);
         FT_Done_Library(lib);
     }
 
@@ -210,21 +216,24 @@ public:
         Opens a font from a file
     +/
     FontFace open(string file, uint faceIndex = 0) {
-        return new FontFace(this, file, faceIndex);
+        faces ~= new FontFace(this, file, faceIndex);
+        return faces[$-1];
     }
 
     /++
         Opens a font from a memory buffer
     +/
     FontFace open(ubyte[] file, uint faceIndex = 0) {
-        return new FontFace(this, file, faceIndex);
+        faces ~= new FontFace(this, file, faceIndex);
+        return faces[$-1];
     }
 
     /++
         Opens a font from a memfile buffer
     +/
     FontFace open(MemFile file, uint faceIndex = 0) {
-        return new FontFace(this, file.arrayptr[0..file.length], faceIndex);
+        faces ~= new FontFace(this, file.arrayptr[0..file.length], faceIndex);
+        return faces[$-1];
     }
 }
 

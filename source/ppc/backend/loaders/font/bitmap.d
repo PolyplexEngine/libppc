@@ -61,5 +61,6 @@ BitmapFont fromFontDescription(FontDescription description) {
     }
     bmf.bitmapTexture = new ubyte[](packer.buffer.length);
     bmf.bitmapTexture[] = packer.buffer;
+    bmf.atlasSize = packer.textureSize;
     return bmf;
 }

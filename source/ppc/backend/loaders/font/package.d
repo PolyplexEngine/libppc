@@ -2,10 +2,20 @@ module ppc.backend.loaders.font;
 public import ppc.backend.loaders.font.bitmap;
 import ppc.backend.ft;
 import vibe.data.serialization;
+import ppc.backend;
 
 class Font {
 public:
+    /++
+        Size of atlas.
+    +/
+    PSize atlasSize;
+
+    /++
+        Returns reference to texture data
+    +/
     abstract ref ubyte[] getTexture();
+    
     /++
         Get GlyphInfo for character
     +/

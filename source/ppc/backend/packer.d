@@ -34,7 +34,7 @@ struct FNode {
 +/
 class TexturePacker {
     /// Size of texture so far
-    PVector textureSize;
+    PSize textureSize;
 
     /// The output buffer
     ubyte[] buffer;
@@ -44,7 +44,7 @@ class TexturePacker {
 
     this() {
         root = new FNode(PVector(0, 0), PVector(int.max, int.max));
-        textureSize = PVector(1024, 1024);
+        textureSize = PSize(1024, 1024);
         buffer = new ubyte[](1024*1024);
     }
 
@@ -65,10 +65,10 @@ class TexturePacker {
 
             // Calculate actual size if on boundary
             if (node.origin.x + node.size.x == int.max) {
-                realSize.x = textureSize.x-node.origin.x;
+                realSize.x = textureSize.width-node.origin.x;
             }
             if (node.origin.y + node.size.y == int.max) {
-                realSize.y = textureSize.y-node.origin.y;
+                realSize.y = textureSize.height-node.origin.y;
             }
 
             
@@ -110,11 +110,11 @@ class TexturePacker {
         }
     }
 
-    void resizeBuffer(PVector newSize) {
-        ubyte[] newBuffer = new ubyte[](newSize.y*newSize.x);
-        foreach(y; 0..textureSize.y) {
-            foreach(x; 0..textureSize.x) {
-                newBuffer[y * newSize.x + x] = buffer[y * textureSize.x + x];
+    void resizeBuffer(PSize newSize) {
+        ubyte[] newBuffer = new ubyte[](newSize.width*newSize.height);
+        foreach(y; 0..textureSize.height) {
+            foreach(x; 0..textureSize.width) {
+                newBuffer[y * newSize.width + x] = buffer[y * textureSize.width + x];
             }
         }
 
@@ -130,7 +130,7 @@ class TexturePacker {
     PVector packTexture(ubyte[] textureBuffer, PVector size) {
         FNode* node = pack(root, size);
         if (node == null) {
-            this.resizeBuffer(PVector(textureSize.x*2, textureSize.y*2));
+            this.resizeBuffer(PSize(textureSize.width*2, textureSize.height*2));
             node = pack(root, size);
 
             assert(node !is null, "Was unable to pack texture!");
@@ -143,7 +143,7 @@ class TexturePacker {
             foreach(lx; 0..size.x) {
                 int y = cast(int)node.origin.y + cast(int)ly;
                 int x = cast(int)node.origin.x + cast(int)lx;
-                this.buffer[y * textureSize.x + x] = textureBuffer[ly * size.x + lx];
+                this.buffer[y * textureSize.width + x] = textureBuffer[ly * size.x + lx];
             }
         }
 

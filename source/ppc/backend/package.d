@@ -55,6 +55,17 @@ struct PVector {
     ptrdiff_t y;
 }
 
+/++
+    A vector that contains size
++/
+struct PSize {
+    /// Height
+    size_t width;
+
+    /// Width
+    size_t height;
+}
+
 struct PPCCreateInfo {
     char[32] author;
     char[16] license;

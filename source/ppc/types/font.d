@@ -29,6 +29,7 @@ import ppc.backend.signatures;
 import ppc.backend.cfile;
 import ppc.backend.loaders.font;
 public import ppc.backend.loaders.font : FontDescription, GlyphInfo;
+public import ppc.backend : PSize;
 
 public:
 
@@ -37,8 +38,18 @@ private:
     Font font;
 
 public:
+    /++
+        Returns reference to texture data
+    +/
     ref ubyte[] getTexture() {
         return font.getTexture();
+    }
+
+    /++
+        Returns width/height of texture in pixels.
+    +/
+    PSize getAtlasSize() {
+        return font.atlasSize;
     }
 
     /++

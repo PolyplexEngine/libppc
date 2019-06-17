@@ -1,19 +1,55 @@
 module ppc.backend.packer;
 import ppc.backend;
 
-
-
-class TexturePacker {
-    struct FNode {
-        PVector origin;
-        PVector size;
-        bool empty = true;
-
-        FNode* left;
-        FNode* right;
+/++
+    Node used in generating a texture.
++/
+struct FNode {
+    this(PVector origin, PVector size) {
+        this.origin = origin;
+        this.size = size;
+        this.empty = true;
+        this.left = null;
+        this.right = null;
     }
+
+    /// Origin of texture
+    PVector origin;
+    
+    /// Size of texture
+    PVector size;
+
+    /// Wether the node is taken
+    bool empty = true;
+
+    /// Node branch left
+    FNode* left;
+
+    /// Node branch right
+    FNode* right;
+}
+
+/++
+    Packing algorithm implementation
++/
+class TexturePacker {
+    /// max size
     size_t MAX;
+
+    /// Size of texture so far
     PVector textureSize;
+
+    /// The output buffer
+    ubyte[] buffer;
+
+    /// The root node for the packing
+    FNode* root;
+
+    this() {
+        root = new FNode(PVector(0, 0), PVector(0, 0));
+        buffer = new ubyte[](0);
+        MAX = 1024;
+    }
 
     /++
         Packing algorithm
@@ -77,5 +113,43 @@ class TexturePacker {
         }
     }
 
-    
+    void resizeBuffer(PVector newSize) {
+        ubyte[] newBuffer = new ubyte[](newSize.y*newSize.x);
+        foreach(y; 0..textureSize.y) {
+            foreach(x; 0..textureSize.x) {
+                newBuffer[y * newSize.x + x] = buffer[y * textureSize.x + x];
+            }
+        }
+
+        textureSize = newSize;
+        buffer = newBuffer;
+    }
+
+    /++
+        Pack a texture
+
+        Returns the position that the texture can be found at.
+    +/
+    PVector packTexture(ubyte[] textureBuffer, PVector size) {
+        FNode* node = pack(root, size);
+        if (node == null) {
+            this.resizeBuffer(PVector(textureSize.x*2, textureSize.y*2));
+            node = pack(root, size);
+
+            assert(node !is null, "Was unable to pack texture!");
+        }
+
+        assert(size.x == node.size.x, "Sizes did not match! This is as bug in the texture packer.");
+        assert(size.y == node.size.y, "Sizes did not match! This is as bug in the texture packer.");
+
+        foreach (ly; 0..size.y) {
+            foreach(lx; 0..size.x) {
+                int y = node.origin.y + ly;
+                int x = node.origin.x + lx;
+                this.buffer[y * textureSize.x + x] = textureBuffer[ly * size.x + lx];
+            }
+        }
+
+        return node.origin;
+    }
 }

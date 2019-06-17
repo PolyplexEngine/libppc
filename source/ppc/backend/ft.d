@@ -40,8 +40,8 @@ private:
     char represents;
     ubyte[] bitmap;
 
-    uint pixelWidth;
-    uint pixelHeight;
+    FTVector size;
+    FTVector bufferSize;
 
     uint grays;
 
@@ -59,8 +59,8 @@ public:
     this(FT_GlyphSlot slot, char rep) {
         this.represents = rep;
 
-        pixelWidth = slot.bitmap.width;
-        pixelHeight = slot.bitmap.rows;
+        size = FTVector(slot.bitmap.width, slot.bitmap.rows);
+        bufferSize = FTVector(slot.bitmap.pitch, slot.bitmap.rows);
         grays = slot.bitmap.num_grays;
         pixels = cast(GlyphPixels)slot.bitmap.pixel_mode;
         fmt = cast(GlyphFormat)slot.format;
@@ -90,17 +90,17 @@ public:
     }
 
     /++
-        Gets the width of the glyph in pixels
+        Gets the size of the glyph in pixels
     +/
-    uint getPixelWidth() {
-        return pixelWidth;
+    PVector getSize() {
+        return size;
     }
 
     /++
-        Gets the height of a glyph in pixels
+        Gets the size of the glyph in bytes on each axis
     +/
-    uint getPixelHeight() {
-        return pixelHeight;
+    PVector getDataSize() {
+        return bufferSize;
     }
 
     /++
@@ -178,8 +178,8 @@ public:
         FT_New_Memory_Face(parent.lib, fontData.ptr, fontData.length, faceIndex, &face);
     }
 
-    void setPixelSizes(uint width, uint height) {
-        FT_Set_Pixel_Sizes(face, width, height);
+    void setPixelSizes(size_t width, size_t height) {
+        FT_Set_Pixel_Sizes(face, cast(uint)width, cast(uint)height);
     }
 
     Glyph* getChar(char c, FTLoadOption options = FTLoadOption.Render) {

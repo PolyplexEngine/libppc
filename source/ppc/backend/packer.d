@@ -144,8 +144,8 @@ class TexturePacker {
 
         foreach (ly; 0..size.y) {
             foreach(lx; 0..size.x) {
-                int y = node.origin.y + ly;
-                int x = node.origin.x + lx;
+                int y = cast(int)node.origin.y + cast(int)ly;
+                int x = cast(int)node.origin.x + cast(int)lx;
                 this.buffer[y * textureSize.x + x] = textureBuffer[ly * size.x + lx];
             }
         }

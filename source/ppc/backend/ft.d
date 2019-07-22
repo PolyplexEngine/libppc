@@ -179,7 +179,7 @@ public:
 
     this(FreeType ft, ubyte[] fontData, uint faceIndex = 0) {
         this.parent = ft;
-        FT_New_Memory_Face(parent.lib, fontData.ptr, fontData.length, faceIndex, &face);
+        FT_New_Memory_Face(parent.lib, fontData.ptr, cast(int)fontData.length, cast(int)faceIndex, &face);
     }
 
     void setPixelSizes(size_t width, size_t height) {

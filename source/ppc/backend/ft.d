@@ -175,11 +175,15 @@ public:
         this.parent = ft;
         FT_New_Face(parent.lib, fontName.toStringz, faceIndex, &face);
         if (face is null) throw new Exception("Unable to find font "~fontName~"! (Make sure to use full paths)");
+
+        FT_Select_Charmap(face, FT_ENCODING_UNICODE);
     }
 
     this(FreeType ft, ubyte[] fontData, uint faceIndex = 0) {
         this.parent = ft;
         FT_New_Memory_Face(parent.lib, fontData.ptr, cast(int)fontData.length, cast(int)faceIndex, &face);
+        
+        FT_Select_Charmap(face, FT_ENCODING_UNICODE);
     }
 
     void setPixelSizes(size_t width, size_t height) {
@@ -187,7 +191,9 @@ public:
     }
 
     Glyph* getChar(char c, FTLoadOption options = FTLoadOption.Render) {
-        FT_Load_Char(face, c, options);
+        uint index = FT_Get_Char_Index(face, cast(dchar)c);
+        FT_Load_Glyph(face, index, FT_LOAD_RENDER);
+        //FT_Load_Char(face, ds[0], options);
         // TODO: Allow conversion
         //FT_Render_Glyph(face.glyph, FT_RENDER_MODE_NORMAL);
         if (face.glyph is null) return null;

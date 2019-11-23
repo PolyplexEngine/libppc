@@ -37,7 +37,7 @@ alias FTVector = PVector;
 +/
 struct Glyph {
 private:
-    char represents;
+    dchar represents;
     ubyte[] bitmap;
 
     FTVector size;
@@ -56,7 +56,7 @@ public:
     /++
         Constructs a new glyph
     +/
-    this(FT_GlyphSlot slot, char rep) {
+    this(FT_GlyphSlot slot, dchar rep) {
         this.represents = rep;
 
         size = FTVector(slot.bitmap.width, slot.bitmap.rows);
@@ -190,8 +190,8 @@ public:
         FT_Set_Pixel_Sizes(face, cast(uint)width, cast(uint)height);
     }
 
-    Glyph* getChar(char c, FTLoadOption options = FTLoadOption.Render) {
-        uint index = FT_Get_Char_Index(face, cast(dchar)c);
+    Glyph* getChar(dchar c, FTLoadOption options = FTLoadOption.Render) {
+        uint index = FT_Get_Char_Index(face, c);
         FT_Load_Glyph(face, index, FT_LOAD_RENDER);
         //FT_Load_Char(face, ds[0], options);
         // TODO: Allow conversion

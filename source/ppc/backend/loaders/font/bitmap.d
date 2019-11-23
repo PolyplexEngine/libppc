@@ -5,21 +5,22 @@ import ppc.backend.cfile;
 import ppc.backend.ft;
 import ppc.backend;
 import ppc.backend.signatures;
+import std.utf;
 
 /++
     A font that uses a bitmap as texture.
 +/
-class BitmapFont : Font{
+class BitmapFont : Font {
 private:
     ubyte[] bitmapTexture;
-    GlyphInfo[char] glyphs;
+    GlyphInfo[dchar] glyphs;
 
 public:
     override ref ubyte[] getTexture() {
         return bitmapTexture;
     }
 
-    override GlyphInfo* opIndex(char c) {
+    override GlyphInfo* opIndex(dchar c) {
         if (c !in glyphs) return null;
         return &glyphs[c];
     }
@@ -47,7 +48,7 @@ BitmapFont fromFontDescription(FontDescription description) {
 
     foreach(series; description.characters) {
         foreach(i; series.range.start..series.range.end) {
-            char ch = cast(char)i;
+            dchar ch = cast(dchar)i;
 
             // If we already have packed that glyph, skip packing it again.
             if (ch in bmf.glyphs) continue;

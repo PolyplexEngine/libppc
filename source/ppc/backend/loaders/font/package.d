@@ -19,7 +19,7 @@ public:
     /++
         Get GlyphInfo for character
     +/
-    abstract GlyphInfo* opIndex(char c);
+    abstract GlyphInfo* opIndex(dchar c);
 
     /++
         Returns true if the graphics frontend should update the texture

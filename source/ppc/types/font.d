@@ -55,7 +55,7 @@ public:
     /++
         Get GlyphInfo for character
     +/
-    GlyphInfo* opIndex(char c) {
+    GlyphInfo* opIndex(dchar c) {
         return font[c];
     }
 
